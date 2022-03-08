@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "4ch",
+  "description": "This extension shows a Google Image search result for the current page",
+  "version": "0.1.0",
+  "icons": {
+    "48": "icon48.png",
+    "16": "icon16.png",
+    "128": "icon128.png"
+  },
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "scripting",
+    "downloads",    
+    "contextMenus",
+    "storage",
+    "alarms"    
+  ],
+  "host_permissions": ["*://*.gfycat.com/*","*://*.reddit.com/*"],
+  "action": {
+    "default_popup": "index.html",
+    "default_icons": {
+      "48": "icon48.png",
+      "16": "icon16.png",
+      "128": "icon128.png"
+    }
+  },
+  "content_scripts": [
+    {
+      "js": ["content.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"     
+  }
+}
+ 

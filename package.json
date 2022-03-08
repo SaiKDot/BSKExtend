@@ -1,0 +1,33 @@
+{
+  "name": "4ch-reddit",
+  "version": "1.0.0",
+  "description": "extension",
+  "scripts": {
+    "start": "webpack --watch --config webpack.dev.js --mode development",
+    "build": "webpack --config webpack.prod.js"
+  },
+  "main": "index.js",
+  "author": "BSK",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "cheerio": "^1.0.0-rc.10",
+    "jquery": "^3.6.0",
+    "path": "^0.12.7",
+    "prop-types": "^15.7.2",
+    "react": "^17.0.2",
+    "stream": "^0.0.2",
+    "styled-components": "^5.3.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.13.16",
+    "babel-loader": "^8.2.2",
+    "clean-webpack-plugin": "^4.0.0-alpha.0",
+    "copy-webpack-plugin": "^8.1.1",
+    "css-loader": "^5.2.4",
+    "html-webpack-plugin": "^5.3.1",
+    "style-loader": "^2.0.0",
+    "webpack": "^5.35.1",
+    "webpack-cli": "^4.6.0"
+  }
+}
