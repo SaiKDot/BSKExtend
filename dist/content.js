@@ -1855,16 +1855,45 @@ __webpack_require__.r(__webpack_exports__);
 
 class Reddit {
   constructor() {
+    this.post, this.url, this.sub, this.domain, this.ext, this.title, this.parts, this.postIdContainer = [], this.lastLength = 0, this.supportedExtensions = ['png', 'jpg', 'jpeg', 'gif', 'gifv', 'mp4', 'mp3'];
     this.init();
-    this.post, this.url, this.sub, this.domain, this.ext, this.title, this.parts;
   }
 
   init() {
+    var self = this;
+    window.addEventListener('neverEndingLoad', function () {
+      self.setRedditMenu();
+    }); // $('.rpBJOHq2PR60pnwJlUyP0').on('DOMNodeInserted', function (e) {
+    //   console.log(e.target.parentNode)
+    // })
+
+    this.addListenerNew();
     this.setRedditMenu();
   }
 
+  async pageUpdateChecker() {
+    while (true) {
+      await (0,_utils__WEBPACK_IMPORTED_MODULE_2__.wait)(50);
+
+      if (true) {
+        this.newMenu();
+      }
+    }
+  }
+
   setRedditMenu() {
+    var so = this;
     let list = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.thing').find('.buttons');
+
+    if (list.length == 0) {
+      //const postCheckInterval = setInterval(() => this.newMenu(), 500)
+      this.pageUpdateChecker(); // this.addListenerNew()
+    } else {
+      this.oldMenu(list);
+    }
+  }
+
+  oldMenu(list) {
     let but = '<li class="dwnlist"> <a href="#0" class="exdownload"> download</a> </li>';
     list.each(function () {
       jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).find('.dwnlist').remove('.dwnlist');
@@ -1873,80 +1902,116 @@ class Reddit {
     let downloadbuttons = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.exdownload');
     Array.from(downloadbuttons).forEach(el => el.addEventListener('click', e => {
       e.preventDefault();
-      let el = e.target;
-      this.post = el.closest('.thing');
-      this.url = this.post.getAttribute('data-url');
-      this.sub = this.post.getAttribute('data-subreddit');
-      this.domain = this.post.getAttribute('data-domain');
-      this.ext = this.url.split('.').pop();
-      console.log(this.domain);
-
-      switch (this.domain) {
-        case 'imgur.com':
-          this.getImgur();
-          break;
-
-        case 'i.imgur.com':
-          this.imgurDirectDownload();
-          break;
-
-        case 'gfycat.com':
-          this.getGfycat();
-          break;
-
-        case 'i.redd.it':
-          this.getdirect();
-          break;
-
-        case 'v.redd.it':
-          this.getRedditVideo();
-          break;
-
-        default:
-          this.directDownload();
-      }
+      let elem = e.target; // this.getData(elem)
     }));
   }
 
-  getImgur() {
-    let post = this.post,
-        sub = this.sub;
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(post).find('.dwnlist').hide();
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(post).find('.buttons').append('<li class="confirm"> <span class="action">format? <a class="option" data-format="img" href="#0"> img &nbsp;</a><a class="option" data-format="vid" href="#0"> vid</a></span> &nbsp;/&nbsp; <span class="action error cancel"> cancel</span> </li>');
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()('.error').css('cursor', 'pointer');
-    document.querySelectorAll('span.cancel').forEach(el => el.addEventListener('click', e => {
-      jquery__WEBPACK_IMPORTED_MODULE_0___default()(post).find('.confirm').remove();
-      jquery__WEBPACK_IMPORTED_MODULE_0___default()(post).find('.dwnlist').show();
-    }));
-    document.querySelectorAll('a.option').forEach(el => el.addEventListener('click', e => {
-      e.preventDefault();
-      let formt = e.target.getAttribute('data-format'),
-          regex = /imgur\.com\/(\w{7})/,
-          parts = this.url.match(regex)[1],
-          dwnUrl,
-          title;
-      console.log(formt);
+  newMenu() {
+    const menu = '<button class="download-button-sk"><span class="pthKOcceozMuXLYrLlbL1"><i class="icon icon-download"></i></span><span class="_2-cXnP74241WI7fpcpfPmg _70940WUuFmpHbhKlj8EjZ">download</span></button>';
+    const postContainers = jquery__WEBPACK_IMPORTED_MODULE_0___default()('[data-testid="post-container"]'); // const self = this
 
-      if (formt == 'vid') {
-        dwnUrl = 'https://i.imgur.com/' + parts + '.mp4';
-        title = jquery__WEBPACK_IMPORTED_MODULE_0___default()(post).find('a.title').text() + '-' + sub + '.mp4';
-      } else if (formt == 'img') {
-        dwnUrl = 'https://i.imgur.com/' + parts + '.jpg';
-        title = jquery__WEBPACK_IMPORTED_MODULE_0___default()(post).find('a.title').text() + '-' + sub + '.jpg';
-      }
+    if (postContainers.length != this.lastLength) {
+      Array.from(postContainers).forEach(el => {
+        const postComment = jquery__WEBPACK_IMPORTED_MODULE_0___default()(el).find('._3-miAEojrCvx_4FQ8x3P-s');
 
-      chrome.runtime.sendMessage({
-        message: 'downloadFile',
-        link: dwnUrl,
-        name: title
-      }, function (response) {
-        console.log({
-          response
-        });
+        if (el.classList.contains('promotedvideolink') || el.classList.contains('promotedlink') || el == undefined) {
+          return;
+        }
+
+        if (jquery__WEBPACK_IMPORTED_MODULE_0___default()(postComment).find('.download-button-sk').length == 0) {
+          postComment.prepend(menu);
+        }
       });
-      jquery__WEBPACK_IMPORTED_MODULE_0___default()(post).find('.confirm').remove();
-      jquery__WEBPACK_IMPORTED_MODULE_0___default()(post).find('.dwnlist').show();
-    }));
+      this.lastLength = postContainers.length;
+    }
+  }
+
+  addListenerNew() {
+    var self = this;
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).off().on('click', '.download-button-sk', function (e) {
+      e.preventDefault(); // if (e.target !== this) return
+
+      let elem = e.target;
+      self.getDataNew(elem);
+    });
+  }
+
+  async getDataNew(el) {
+    const post = el.closest('.Post');
+    const iop = jquery__WEBPACK_IMPORTED_MODULE_0___default()('[data-testid="post_timestamp"]');
+    const tmstmp = jquery__WEBPACK_IMPORTED_MODULE_0___default()(post).find(iop);
+    let href = jquery__WEBPACK_IMPORTED_MODULE_0___default()(tmstmp).attr('href');
+    href += '.json';
+    const req = await fetch(href);
+    const resp = await req.json();
+    const data = resp[0].data.children[0].data;
+    console.log(data);
+    this.url = data.url;
+
+    if (!data.url) {
+      this.url = data.url_overridden_by_dest;
+    }
+
+    this.sub = data.subreddit;
+    this.ext = this.url.split('.').pop();
+    this.domain = data.domain;
+    this.title = data.title;
+
+    if (this.supportedExtensions.includes(this.ext)) {
+      this.directDownload();
+    } else {
+      this.delegateDomain();
+    }
+
+    let isSelf = data.isSelf;
+
+    if (isSelf == false) {
+      this.delegateDomain();
+    }
+  }
+
+  delegateDomain() {
+    switch (this.domain) {
+      case 'imgur.com':
+        this.getImgur();
+        break;
+
+      case 'i.imgur.com':
+        this.imgurDirectDownload();
+        break;
+
+      case 'gfycat.com':
+        this.getGfycat();
+        break;
+
+      case 'i.redd.it':
+        this.getdirect();
+        break;
+
+      case 'v.redd.it':
+        this.getRedditVideo();
+        break;
+
+      default:
+        this.directDownload();
+    }
+  }
+
+  getImgur() {
+    let id = this.url.replace(/.*\//gim, '');
+    let isAlbum = this.url.replace(/.*imgur.com\//gim, '').startsWith('a');
+    return isAlbum ? this.getAlbumLinks(id) : this.getGalleryLinks(id);
+  }
+
+  async getGalleryLinks() {
+    chrome.runtime.sendMessage({
+      message: 'loadImgurPage',
+      link: this.url
+    }, function (response) {
+      console.log({
+        response
+      });
+    });
   }
 
   imgurDirectDownload() {
@@ -1978,63 +2043,23 @@ class Reddit {
     });
   }
 
-  getGfycat() {
-    let post = this.post,
-        sub = this.sub,
-        ext = this.ext,
-        url = this.url;
-    console.log(url);
-    let title = jquery__WEBPACK_IMPORTED_MODULE_0___default()(post).find('a.title').text() + '-' + sub + '.mp4';
-    chrome.runtime.sendMessage({
-      message: 'getGfy',
-      link: url,
-      name: title
-    });
-  }
-
-  getdirect() {
-    if (this.url.includes('.gif')) {
-      this.getRedditGif();
-    } else {
-      this.directDownload();
-    }
-  }
-
-  getRedditGif() {
-    let post = this.post,
-        sub = this.sub,
-        ext = this.ext,
-        url = 'https://www.reddit.com/' + this.post.getAttribute('data-permalink') + '.json';
-    let title = jquery__WEBPACK_IMPORTED_MODULE_0___default()(post).find('a.title').text() + '-' + sub + '.mp4';
-    chrome.runtime.sendMessage({
-      message: 'getRedditgif',
-      link: url,
-      name: title
-    });
-  }
-
-  getRedditVideo() {
-    let post = this.post,
-        sub = this.sub,
-        ext = this.ext,
-        url = 'https://www.reddit.com/' + this.post.getAttribute('data-permalink') + '.json';
-    console.log(url);
-    let title = jquery__WEBPACK_IMPORTED_MODULE_0___default()(post).find('a.title').text() + '-' + sub + '.mp4';
-    chrome.runtime.sendMessage({
-      message: 'redditVideo',
-      link: url,
-      name: title
-    });
-  }
-
   directDownload() {
     let post = this.post,
         sub = this.sub,
         ext = this.ext,
         dwnUrl = this.url,
-        title;
-    title = jquery__WEBPACK_IMPORTED_MODULE_0___default()(post).find('a.title').text() + '-' + sub + '.' + ext;
-    title = (0,_utils__WEBPACK_IMPORTED_MODULE_2__.convertToValidFilename)(title);
+        title = (0,_utils__WEBPACK_IMPORTED_MODULE_2__.convertToValidFilename)(this.title);
+    console.log({
+      title
+    });
+    title = title + '-' + sub + '.' + ext;
+
+    if (ext == 'gifv' || ext == 'gif') {
+      dwnUrl = dwnUrl.slice(0, -4) + 'mp4';
+      console.log(dwnUrl);
+      title = title.replace('gifv', 'mp4');
+    }
+
     chrome.runtime.sendMessage({
       message: 'downloadFile',
       link: dwnUrl,
@@ -2220,7 +2245,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "childrenMatches": () => (/* binding */ childrenMatches),
 /* harmony export */   "toType": () => (/* binding */ toType),
 /* harmony export */   "convertToValidFilename": () => (/* binding */ convertToValidFilename),
-/* harmony export */   "api": () => (/* binding */ api)
+/* harmony export */   "api": () => (/* binding */ api),
+/* harmony export */   "wait": () => (/* binding */ wait)
 /* harmony export */ });
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
@@ -2245,6 +2271,9 @@ const api = axios__WEBPACK_IMPORTED_MODULE_0___default().create({
     'Content-Type': 'application/json'
   }
 });
+const wait = ms => {
+  return new Promise(res => setTimeout(res, ms));
+};
 
 /***/ }),
 
@@ -2268,7 +2297,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, " .ext-modal {\r\n  display: none; \r\n  position: fixed;  \r\n  z-index: 1000; \r\n  left: 0;\r\n  top: 0;\r\n  width: 100vw;  \r\n  height: 100vh;  \r\n  overflow: auto;\r\n  padding-top: 100px;\r\n  background-color: rgb(0,0,0);  \r\n  background-color: rgba(0,0,0,0.4);\r\n}\r\n\r\n/* Modal Content/Box */\r\n.ext-modal-content {\r\n  background-color: #fefefe;\r\n  margin: auto;\r\n  padding: 0;\r\n  border: 1px solid #888;\r\n  width: 29rem;  \r\n}\r\n\r\n/* The Close Button */\r\n.ext-close {\r\n  color: #aaa;\r\n  float: right;\r\n  font-size: 28px;\r\n  font-weight: bold;\r\n}\r\n\r\n.ext-close:hover,\r\n.ext-close:focus {\r\n  color: black;\r\n  text-decoration: none;\r\n  cursor: pointer;\r\n}\r\n\r\n.ext-modal-header {\r\n    color: #fff!important;\r\n    background-color: #f44336!important;\r\n    padding: 0.01em 16px;\r\n    position: relative;\r\n    margin: 0;\r\n}\r\n\r\n.ext-modal-header::before {\r\n    content: \"\";\r\n    display: table;\r\n    clear: both;\r\n}\r\n/* \r\n#folderName {\r\n    color: #3c3c3c;\r\n    font-family: Helvetica, Arial, sans-serif;\r\n    font-weight: 500;\r\n    font-size: 18px;\r\n    border-radius: 0;\r\n    line-height: 22px;\r\n    background-color: #fbfbfb;\r\n    padding: 13px 13px 13px 54px;\r\n    margin-bottom: 10px;\r\n    width: 100%;\r\n    -webkit-box-sizing: border-box;\r\n    -moz-box-sizing: border-box;\r\n    -ms-box-sizing: border-box;\r\n    box-sizing: border-box;\r\n    border: 1px solid grey;      \r\n    background-size: 30px 30px;\r\n    background-position: 11px 8px;\r\n    background-repeat: no-repeat;\r\n} */\r\n\r\n#pagerows {\r\n  padding: 10px;\r\n}\r\n#page-rows>div {\r\n    width: calc(100% - 3rem);\r\n    margin-top: .9rem;\r\n    margin-bottom: 1px;\r\n    margin-left: 1.5rem;\r\n    margin-right: 1.5rem;\r\n    position: relative;\r\n}\r\n\r\n.inp-row {\r\n        padding: 0;\r\n        will-change: auto;\r\n        flex-direction: column;\r\n        align-items: center;\r\n        width: 100%;\r\n        height: auto;\r\n        padding: 0;\r\n        transition: none;\r\n        overflow: visible;\r\n        border-top-left-radius: 4px;\r\n        border-top-right-radius: 4px;\r\n        border-bottom-right-radius: 0;\r\n        border-bottom-left-radius: 0;\r\n        display: inline-flex;\r\n          box-sizing: border-box;\r\n}\r\n#foldername {\r\n    padding: 0;\r\n    margin: .75rem 0 .75rem 1rem;\r\n    width: calc(100% - 1rem);\r\n    resize: none;\r\n    line-height: 1.3rem;\r\n    white-space: nowrap;\r\n    overflow-x: overlay;\r\n    overflow-y: scroll;\r\n    color: rgba(0,0,0,.87);\r\n    flex-grow: 1;\r\n    height: auto;\r\n    min-height: 1.5rem;\r\n    box-sizing: border-box;\r\n    display: flex;\r\n    border: 2px #333 solid;\r\n    border-radius: 4px !important;\r\n    background-color: transparent;\r\n    caret-color: #6200ee;\r\n    font-family: Roboto,sans-serif;\r\n    font-weight: 400;\r\n    font-size: 15px;\r\n    transition: opacity 150ms cubic-bezier(.4,0,.2,1);\r\n    appearance: none;\r\n    min-width: 0;    \r\n    border-radius: 0;\r\n    background: 0 0;\r\n    overflow:hidden;\r\n}\r\n\r\n.ext-btn {\r\n    border-radius: 3px; \r\n    border: 1px solid transparent;\r\n    border-radius: 0;  \r\n    border-width: 1px;\r\n    box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);\r\n    background-color: #f4f4f4;\r\n    color: #444;    \r\n    border: 1px solid transparent;\r\n    border-color: #ddd;\r\n    /* padding: 10px 16px; */\r\n    display: inline-block;\r\n    font-size: 15px;\r\n    line-height: 1.3333333;\r\n    touch-action: manipulation;\r\n    cursor: pointer;\r\n    background-image: none;\r\n    margin-bottom: 0;\r\n    font-weight: 400;\r\n    text-align: center;\r\n    white-space: nowrap;\r\n    vertical-align: middle;\r\n    height: 35px;\r\n    width: 80px;\r\n}   \r\n\r\n.ext-btn:focus {\r\n    outline: none;\r\n    color: #333;\r\n    background-color: #e6e6e6;\r\n    border-color: #8c8c8c;\r\n    text-decoration: none;\r\n    \r\n}\r\n.ext-btn:active {\r\n      background-color: #e7e7e7;\r\n      box-shadow: inset 0 3px 5px rgb(0 0 0 / 13%);\r\n      color: #333;     \r\n      background-image: none;\r\n      border-color: #adadad;\r\n      outline: 0;\r\n}\r\n\r\n .ext-btn:active:focus {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n }\r\n .ext-btn:active:focus, .ext-btn:focus {\r\n    outline: none;\r\n    outline-offset: -2px;\r\n }\r\n.ext-btn:active:hover {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n}\r\n.ext-radio {\r\n  margin: 0.5rem;\r\n}\r\n.ext-radio input[type=radio] {\r\n  position: absolute;\r\n  opacity: 0;\r\n}\r\n.ext-radio-label {\r\n  color : #333;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:before {\r\n  content: \"\";\r\n  background: #f4f4f4;\r\n  border-radius: 100%;\r\n  border: 1px solid #b4b4b4;\r\n  display: inline-block;\r\n  width: 1.4em;\r\n  height: 1.4em;\r\n  position: relative;\r\n  top: -0.2em;\r\n  margin-right: 1em;\r\n  vertical-align: top;\r\n  cursor: pointer;\r\n  text-align: center;\r\n  transition: all 250ms ease;\r\n}\r\n.ext-radio input[type=radio]:checked + .ext-radio-label:before {\r\n  background-color: #3197EE;\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n}\r\n.ext-radio input[type=radio]:focus + .ext-radio-label:before {\r\n  outline: none;\r\n  border-color: #3197EE;\r\n}\r\n.ext-radio input[type=radio]:disabled + .ext-radio-label:before {\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n  border-color: #b4b4b4;\r\n  background: #b4b4b4;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:empty:before {\r\n  margin-right: 0;\r\n}", "",{"version":3,"sources":["webpack://./src/content.css"],"names":[],"mappings":"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","sourcesContent":[" .ext-modal {\r\n  display: none; \r\n  position: fixed;  \r\n  z-index: 1000; \r\n  left: 0;\r\n  top: 0;\r\n  width: 100vw;  \r\n  height: 100vh;  \r\n  overflow: auto;\r\n  padding-top: 100px;\r\n  background-color: rgb(0,0,0);  \r\n  background-color: rgba(0,0,0,0.4);\r\n}\r\n\r\n/* Modal Content/Box */\r\n.ext-modal-content {\r\n  background-color: #fefefe;\r\n  margin: auto;\r\n  padding: 0;\r\n  border: 1px solid #888;\r\n  width: 29rem;  \r\n}\r\n\r\n/* The Close Button */\r\n.ext-close {\r\n  color: #aaa;\r\n  float: right;\r\n  font-size: 28px;\r\n  font-weight: bold;\r\n}\r\n\r\n.ext-close:hover,\r\n.ext-close:focus {\r\n  color: black;\r\n  text-decoration: none;\r\n  cursor: pointer;\r\n}\r\n\r\n.ext-modal-header {\r\n    color: #fff!important;\r\n    background-color: #f44336!important;\r\n    padding: 0.01em 16px;\r\n    position: relative;\r\n    margin: 0;\r\n}\r\n\r\n.ext-modal-header::before {\r\n    content: \"\";\r\n    display: table;\r\n    clear: both;\r\n}\r\n/* \r\n#folderName {\r\n    color: #3c3c3c;\r\n    font-family: Helvetica, Arial, sans-serif;\r\n    font-weight: 500;\r\n    font-size: 18px;\r\n    border-radius: 0;\r\n    line-height: 22px;\r\n    background-color: #fbfbfb;\r\n    padding: 13px 13px 13px 54px;\r\n    margin-bottom: 10px;\r\n    width: 100%;\r\n    -webkit-box-sizing: border-box;\r\n    -moz-box-sizing: border-box;\r\n    -ms-box-sizing: border-box;\r\n    box-sizing: border-box;\r\n    border: 1px solid grey;      \r\n    background-size: 30px 30px;\r\n    background-position: 11px 8px;\r\n    background-repeat: no-repeat;\r\n} */\r\n\r\n#pagerows {\r\n  padding: 10px;\r\n}\r\n#page-rows>div {\r\n    width: calc(100% - 3rem);\r\n    margin-top: .9rem;\r\n    margin-bottom: 1px;\r\n    margin-left: 1.5rem;\r\n    margin-right: 1.5rem;\r\n    position: relative;\r\n}\r\n\r\n.inp-row {\r\n        padding: 0;\r\n        will-change: auto;\r\n        flex-direction: column;\r\n        align-items: center;\r\n        width: 100%;\r\n        height: auto;\r\n        padding: 0;\r\n        transition: none;\r\n        overflow: visible;\r\n        border-top-left-radius: 4px;\r\n        border-top-right-radius: 4px;\r\n        border-bottom-right-radius: 0;\r\n        border-bottom-left-radius: 0;\r\n        display: inline-flex;\r\n          box-sizing: border-box;\r\n}\r\n#foldername {\r\n    padding: 0;\r\n    margin: .75rem 0 .75rem 1rem;\r\n    width: calc(100% - 1rem);\r\n    resize: none;\r\n    line-height: 1.3rem;\r\n    white-space: nowrap;\r\n    overflow-x: overlay;\r\n    overflow-y: scroll;\r\n    color: rgba(0,0,0,.87);\r\n    flex-grow: 1;\r\n    height: auto;\r\n    min-height: 1.5rem;\r\n    box-sizing: border-box;\r\n    display: flex;\r\n    border: 2px #333 solid;\r\n    border-radius: 4px !important;\r\n    background-color: transparent;\r\n    caret-color: #6200ee;\r\n    font-family: Roboto,sans-serif;\r\n    font-weight: 400;\r\n    font-size: 15px;\r\n    transition: opacity 150ms cubic-bezier(.4,0,.2,1);\r\n    appearance: none;\r\n    min-width: 0;    \r\n    border-radius: 0;\r\n    background: 0 0;\r\n    overflow:hidden;\r\n}\r\n\r\n.ext-btn {\r\n    border-radius: 3px; \r\n    border: 1px solid transparent;\r\n    border-radius: 0;  \r\n    border-width: 1px;\r\n    box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);\r\n    background-color: #f4f4f4;\r\n    color: #444;    \r\n    border: 1px solid transparent;\r\n    border-color: #ddd;\r\n    /* padding: 10px 16px; */\r\n    display: inline-block;\r\n    font-size: 15px;\r\n    line-height: 1.3333333;\r\n    touch-action: manipulation;\r\n    cursor: pointer;\r\n    background-image: none;\r\n    margin-bottom: 0;\r\n    font-weight: 400;\r\n    text-align: center;\r\n    white-space: nowrap;\r\n    vertical-align: middle;\r\n    height: 35px;\r\n    width: 80px;\r\n}   \r\n\r\n.ext-btn:focus {\r\n    outline: none;\r\n    color: #333;\r\n    background-color: #e6e6e6;\r\n    border-color: #8c8c8c;\r\n    text-decoration: none;\r\n    \r\n}\r\n.ext-btn:active {\r\n      background-color: #e7e7e7;\r\n      box-shadow: inset 0 3px 5px rgb(0 0 0 / 13%);\r\n      color: #333;     \r\n      background-image: none;\r\n      border-color: #adadad;\r\n      outline: 0;\r\n}\r\n\r\n .ext-btn:active:focus {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n }\r\n .ext-btn:active:focus, .ext-btn:focus {\r\n    outline: none;\r\n    outline-offset: -2px;\r\n }\r\n.ext-btn:active:hover {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n}\r\n.ext-radio {\r\n  margin: 0.5rem;\r\n}\r\n.ext-radio input[type=radio] {\r\n  position: absolute;\r\n  opacity: 0;\r\n}\r\n.ext-radio-label {\r\n  color : #333;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:before {\r\n  content: \"\";\r\n  background: #f4f4f4;\r\n  border-radius: 100%;\r\n  border: 1px solid #b4b4b4;\r\n  display: inline-block;\r\n  width: 1.4em;\r\n  height: 1.4em;\r\n  position: relative;\r\n  top: -0.2em;\r\n  margin-right: 1em;\r\n  vertical-align: top;\r\n  cursor: pointer;\r\n  text-align: center;\r\n  transition: all 250ms ease;\r\n}\r\n.ext-radio input[type=radio]:checked + .ext-radio-label:before {\r\n  background-color: #3197EE;\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n}\r\n.ext-radio input[type=radio]:focus + .ext-radio-label:before {\r\n  outline: none;\r\n  border-color: #3197EE;\r\n}\r\n.ext-radio input[type=radio]:disabled + .ext-radio-label:before {\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n  border-color: #b4b4b4;\r\n  background: #b4b4b4;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:empty:before {\r\n  margin-right: 0;\r\n}"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, " .ext-modal {\r\n  display: none; \r\n  position: fixed;  \r\n  z-index: 1000; \r\n  left: 0;\r\n  top: 0;\r\n  width: 100vw;  \r\n  height: 100vh;  \r\n  overflow: auto;\r\n  padding-top: 100px;\r\n  background-color: rgb(0,0,0);  \r\n  background-color: rgba(0,0,0,0.4);\r\n}\r\n\r\n/* Modal Content/Box */\r\n.ext-modal-content {\r\n  background-color: #fefefe;\r\n  margin: auto;\r\n  padding: 0;\r\n  border: 1px solid #888;\r\n  width: 29rem;  \r\n}\r\n\r\n/* The Close Button */\r\n.ext-close {\r\n  color: #aaa;\r\n  float: right;\r\n  font-size: 28px;\r\n  font-weight: bold;\r\n}\r\n\r\n.ext-close:hover,\r\n.ext-close:focus {\r\n  color: black;\r\n  text-decoration: none;\r\n  cursor: pointer;\r\n}\r\n\r\n.ext-modal-header {\r\n    color: #fff!important;\r\n    background-color: #f44336!important;\r\n    padding: 0.01em 16px;\r\n    position: relative;\r\n    margin: 0;\r\n}\r\n\r\n.ext-modal-header::before {\r\n    content: \"\";\r\n    display: table;\r\n    clear: both;\r\n}\r\n/* \r\n#folderName {\r\n    color: #3c3c3c;\r\n    font-family: Helvetica, Arial, sans-serif;\r\n    font-weight: 500;\r\n    font-size: 18px;\r\n    border-radius: 0;\r\n    line-height: 22px;\r\n    background-color: #fbfbfb;\r\n    padding: 13px 13px 13px 54px;\r\n    margin-bottom: 10px;\r\n    width: 100%;\r\n    -webkit-box-sizing: border-box;\r\n    -moz-box-sizing: border-box;\r\n    -ms-box-sizing: border-box;\r\n    box-sizing: border-box;\r\n    border: 1px solid grey;      \r\n    background-size: 30px 30px;\r\n    background-position: 11px 8px;\r\n    background-repeat: no-repeat;\r\n} */\r\n\r\n#pagerows {\r\n  padding: 10px;\r\n}\r\n#page-rows>div {\r\n    width: calc(100% - 3rem);\r\n    margin-top: .9rem;\r\n    margin-bottom: 1px;\r\n    margin-left: 1.5rem;\r\n    margin-right: 1.5rem;\r\n    position: relative;\r\n}\r\n\r\n.inp-row {\r\n        padding: 0;\r\n        will-change: auto;\r\n        flex-direction: column;\r\n        align-items: center;\r\n        width: 100%;\r\n        height: auto;\r\n        padding: 0;\r\n        transition: none;\r\n        overflow: visible;\r\n        border-top-left-radius: 4px;\r\n        border-top-right-radius: 4px;\r\n        border-bottom-right-radius: 0;\r\n        border-bottom-left-radius: 0;\r\n        display: inline-flex;\r\n          box-sizing: border-box;\r\n}\r\n#foldername {\r\n    padding: 0;\r\n    margin: .75rem 0 .75rem 1rem;\r\n    width: calc(100% - 1rem);\r\n    resize: none;\r\n    line-height: 1.3rem;\r\n    white-space: nowrap;\r\n    overflow-x: overlay;\r\n    overflow-y: scroll;\r\n    color: rgba(0,0,0,.87);\r\n    flex-grow: 1;\r\n    height: auto;\r\n    min-height: 1.5rem;\r\n    box-sizing: border-box;\r\n    display: flex;\r\n    border: 2px #333 solid;\r\n    border-radius: 4px !important;\r\n    background-color: transparent;\r\n    caret-color: #6200ee;\r\n    font-family: Roboto,sans-serif;\r\n    font-weight: 400;\r\n    font-size: 15px;\r\n    transition: opacity 150ms cubic-bezier(.4,0,.2,1);\r\n    appearance: none;\r\n    min-width: 0;    \r\n    border-radius: 0;\r\n    background: 0 0;\r\n    overflow:hidden;\r\n}\r\n\r\n.ext-btn {\r\n    border-radius: 3px; \r\n    border: 1px solid transparent;\r\n    border-radius: 0;  \r\n    border-width: 1px;\r\n    box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);\r\n    background-color: #f4f4f4;\r\n    color: #444;    \r\n    border: 1px solid transparent;\r\n    border-color: #ddd;\r\n    /* padding: 10px 16px; */\r\n    display: inline-block;\r\n    font-size: 15px;\r\n    line-height: 1.3333333;\r\n    touch-action: manipulation;\r\n    cursor: pointer;\r\n    background-image: none;\r\n    margin-bottom: 0;\r\n    font-weight: 400;\r\n    text-align: center;\r\n    white-space: nowrap;\r\n    vertical-align: middle;\r\n    height: 35px;\r\n    width: 80px;\r\n}   \r\n\r\n.ext-btn:focus {\r\n    outline: none;\r\n    color: #333;\r\n    background-color: #e6e6e6;\r\n    border-color: #8c8c8c;\r\n    text-decoration: none;\r\n    \r\n}\r\n.ext-btn:active {\r\n      background-color: #e7e7e7;\r\n      box-shadow: inset 0 3px 5px rgb(0 0 0 / 13%);\r\n      color: #333;     \r\n      background-image: none;\r\n      border-color: #adadad;\r\n      outline: 0;\r\n}\r\n\r\n .ext-btn:active:focus {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n }\r\n .ext-btn:active:focus, .ext-btn:focus {\r\n    outline: none;\r\n    outline-offset: -2px;\r\n }\r\n.ext-btn:active:hover {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n}\r\n.ext-radio {\r\n  margin: 0.5rem;\r\n}\r\n.ext-radio input[type=radio] {\r\n  position: absolute;\r\n  opacity: 0;\r\n}\r\n.ext-radio-label {\r\n  color : #333;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:before {\r\n  content: \"\";\r\n  background: #f4f4f4;\r\n  border-radius: 100%;\r\n  border: 1px solid #b4b4b4;\r\n  display: inline-block;\r\n  width: 1.4em;\r\n  height: 1.4em;\r\n  position: relative;\r\n  top: -0.2em;\r\n  margin-right: 1em;\r\n  vertical-align: top;\r\n  cursor: pointer;\r\n  text-align: center;\r\n  transition: all 250ms ease;\r\n}\r\n.ext-radio input[type=radio]:checked + .ext-radio-label:before {\r\n  background-color: #3197EE;\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n}\r\n.ext-radio input[type=radio]:focus + .ext-radio-label:before {\r\n  outline: none;\r\n  border-color: #3197EE;\r\n}\r\n.ext-radio input[type=radio]:disabled + .ext-radio-label:before {\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n  border-color: #b4b4b4;\r\n  background: #b4b4b4;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:empty:before {\r\n  margin-right: 0;\r\n}\r\n.download-button-sk {\r\n    border-radius: 2px;\r\n    padding: 8px;\r\n    display: -ms-flexbox;\r\n    display: flex;\r\n    -ms-flex-align: center;\r\n    align-items: center;\r\n    text-transform: capitalize;\r\n    height: 100%;\r\n}\r\n.download-button-sk > span {\r\n  pointer-events: none;\r\n}\r\n.download-button-sk:hover {\r\n      background-color: #d6d6d6;\r\n      outline: none;\r\n}", "",{"version":3,"sources":["webpack://./src/content.css"],"names":[],"mappings":"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","sourcesContent":[" .ext-modal {\r\n  display: none; \r\n  position: fixed;  \r\n  z-index: 1000; \r\n  left: 0;\r\n  top: 0;\r\n  width: 100vw;  \r\n  height: 100vh;  \r\n  overflow: auto;\r\n  padding-top: 100px;\r\n  background-color: rgb(0,0,0);  \r\n  background-color: rgba(0,0,0,0.4);\r\n}\r\n\r\n/* Modal Content/Box */\r\n.ext-modal-content {\r\n  background-color: #fefefe;\r\n  margin: auto;\r\n  padding: 0;\r\n  border: 1px solid #888;\r\n  width: 29rem;  \r\n}\r\n\r\n/* The Close Button */\r\n.ext-close {\r\n  color: #aaa;\r\n  float: right;\r\n  font-size: 28px;\r\n  font-weight: bold;\r\n}\r\n\r\n.ext-close:hover,\r\n.ext-close:focus {\r\n  color: black;\r\n  text-decoration: none;\r\n  cursor: pointer;\r\n}\r\n\r\n.ext-modal-header {\r\n    color: #fff!important;\r\n    background-color: #f44336!important;\r\n    padding: 0.01em 16px;\r\n    position: relative;\r\n    margin: 0;\r\n}\r\n\r\n.ext-modal-header::before {\r\n    content: \"\";\r\n    display: table;\r\n    clear: both;\r\n}\r\n/* \r\n#folderName {\r\n    color: #3c3c3c;\r\n    font-family: Helvetica, Arial, sans-serif;\r\n    font-weight: 500;\r\n    font-size: 18px;\r\n    border-radius: 0;\r\n    line-height: 22px;\r\n    background-color: #fbfbfb;\r\n    padding: 13px 13px 13px 54px;\r\n    margin-bottom: 10px;\r\n    width: 100%;\r\n    -webkit-box-sizing: border-box;\r\n    -moz-box-sizing: border-box;\r\n    -ms-box-sizing: border-box;\r\n    box-sizing: border-box;\r\n    border: 1px solid grey;      \r\n    background-size: 30px 30px;\r\n    background-position: 11px 8px;\r\n    background-repeat: no-repeat;\r\n} */\r\n\r\n#pagerows {\r\n  padding: 10px;\r\n}\r\n#page-rows>div {\r\n    width: calc(100% - 3rem);\r\n    margin-top: .9rem;\r\n    margin-bottom: 1px;\r\n    margin-left: 1.5rem;\r\n    margin-right: 1.5rem;\r\n    position: relative;\r\n}\r\n\r\n.inp-row {\r\n        padding: 0;\r\n        will-change: auto;\r\n        flex-direction: column;\r\n        align-items: center;\r\n        width: 100%;\r\n        height: auto;\r\n        padding: 0;\r\n        transition: none;\r\n        overflow: visible;\r\n        border-top-left-radius: 4px;\r\n        border-top-right-radius: 4px;\r\n        border-bottom-right-radius: 0;\r\n        border-bottom-left-radius: 0;\r\n        display: inline-flex;\r\n          box-sizing: border-box;\r\n}\r\n#foldername {\r\n    padding: 0;\r\n    margin: .75rem 0 .75rem 1rem;\r\n    width: calc(100% - 1rem);\r\n    resize: none;\r\n    line-height: 1.3rem;\r\n    white-space: nowrap;\r\n    overflow-x: overlay;\r\n    overflow-y: scroll;\r\n    color: rgba(0,0,0,.87);\r\n    flex-grow: 1;\r\n    height: auto;\r\n    min-height: 1.5rem;\r\n    box-sizing: border-box;\r\n    display: flex;\r\n    border: 2px #333 solid;\r\n    border-radius: 4px !important;\r\n    background-color: transparent;\r\n    caret-color: #6200ee;\r\n    font-family: Roboto,sans-serif;\r\n    font-weight: 400;\r\n    font-size: 15px;\r\n    transition: opacity 150ms cubic-bezier(.4,0,.2,1);\r\n    appearance: none;\r\n    min-width: 0;    \r\n    border-radius: 0;\r\n    background: 0 0;\r\n    overflow:hidden;\r\n}\r\n\r\n.ext-btn {\r\n    border-radius: 3px; \r\n    border: 1px solid transparent;\r\n    border-radius: 0;  \r\n    border-width: 1px;\r\n    box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);\r\n    background-color: #f4f4f4;\r\n    color: #444;    \r\n    border: 1px solid transparent;\r\n    border-color: #ddd;\r\n    /* padding: 10px 16px; */\r\n    display: inline-block;\r\n    font-size: 15px;\r\n    line-height: 1.3333333;\r\n    touch-action: manipulation;\r\n    cursor: pointer;\r\n    background-image: none;\r\n    margin-bottom: 0;\r\n    font-weight: 400;\r\n    text-align: center;\r\n    white-space: nowrap;\r\n    vertical-align: middle;\r\n    height: 35px;\r\n    width: 80px;\r\n}   \r\n\r\n.ext-btn:focus {\r\n    outline: none;\r\n    color: #333;\r\n    background-color: #e6e6e6;\r\n    border-color: #8c8c8c;\r\n    text-decoration: none;\r\n    \r\n}\r\n.ext-btn:active {\r\n      background-color: #e7e7e7;\r\n      box-shadow: inset 0 3px 5px rgb(0 0 0 / 13%);\r\n      color: #333;     \r\n      background-image: none;\r\n      border-color: #adadad;\r\n      outline: 0;\r\n}\r\n\r\n .ext-btn:active:focus {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n }\r\n .ext-btn:active:focus, .ext-btn:focus {\r\n    outline: none;\r\n    outline-offset: -2px;\r\n }\r\n.ext-btn:active:hover {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n}\r\n.ext-radio {\r\n  margin: 0.5rem;\r\n}\r\n.ext-radio input[type=radio] {\r\n  position: absolute;\r\n  opacity: 0;\r\n}\r\n.ext-radio-label {\r\n  color : #333;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:before {\r\n  content: \"\";\r\n  background: #f4f4f4;\r\n  border-radius: 100%;\r\n  border: 1px solid #b4b4b4;\r\n  display: inline-block;\r\n  width: 1.4em;\r\n  height: 1.4em;\r\n  position: relative;\r\n  top: -0.2em;\r\n  margin-right: 1em;\r\n  vertical-align: top;\r\n  cursor: pointer;\r\n  text-align: center;\r\n  transition: all 250ms ease;\r\n}\r\n.ext-radio input[type=radio]:checked + .ext-radio-label:before {\r\n  background-color: #3197EE;\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n}\r\n.ext-radio input[type=radio]:focus + .ext-radio-label:before {\r\n  outline: none;\r\n  border-color: #3197EE;\r\n}\r\n.ext-radio input[type=radio]:disabled + .ext-radio-label:before {\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n  border-color: #b4b4b4;\r\n  background: #b4b4b4;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:empty:before {\r\n  margin-right: 0;\r\n}\r\n.download-button-sk {\r\n    border-radius: 2px;\r\n    padding: 8px;\r\n    display: -ms-flexbox;\r\n    display: flex;\r\n    -ms-flex-align: center;\r\n    align-items: center;\r\n    text-transform: capitalize;\r\n    height: 100%;\r\n}\r\n.download-button-sk > span {\r\n  pointer-events: none;\r\n}\r\n.download-button-sk:hover {\r\n      background-color: #d6d6d6;\r\n      outline: none;\r\n}"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

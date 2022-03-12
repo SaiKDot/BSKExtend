@@ -26,3 +26,6 @@ export const api = axios.create({
   },
 })
  
+export const wait = (ms) => {
+  return new Promise((res) => setTimeout(res, ms))
+}

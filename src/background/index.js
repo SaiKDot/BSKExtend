@@ -8,7 +8,7 @@ import { convertToValidFilename } from '../utils'
 export default class EventTasks {
   constructor() {
     this.init()
-    this.fileName
+    this.fileName = ''
     this.url
     this.audioFname
     this.videoFname
@@ -39,11 +39,17 @@ export default class EventTasks {
           }
           break
         case 'waifuist':
-          {
-            let ft = request.fol_title
-            let thpathprot = request.thrName
-          }
-          break
+        {
+          let ft = request.fol_title
+          let thpathprot = request.thrName
+        }
+        break
+        case 'loadImgurPage' : {
+          this.url = request.link
+          fetch(this.url).then(  async (resp) => {let m = await resp.text() ; console.log(m )})
+
+        }
+        break
         case 'getGfy':
           {
             this.fileName = convertToValidFilename(request.name)

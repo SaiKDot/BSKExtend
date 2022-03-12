@@ -229,3 +229,20 @@
 .ext-radio input[type=radio] + .ext-radio-label:empty:before {
   margin-right: 0;
 }
+.download-button-sk {
+    border-radius: 2px;
+    padding: 8px;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-align: center;
+    align-items: center;
+    text-transform: capitalize;
+    height: 100%;
+}
+.download-button-sk > span {
+  pointer-events: none;
+}
+.download-button-sk:hover {
+      background-color: #d6d6d6;
+      outline: none;
+}
