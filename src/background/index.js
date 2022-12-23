@@ -1,7 +1,6 @@
  
 import { string } from 'prop-types'
-const cheerio = require('cheerio')
- 
+const cheerio = require('cheerio') 
 import { convertToValidFilename } from '../utils'
  
 
@@ -12,6 +11,9 @@ export default class EventTasks {
     this.url
     this.audioFname
     this.videoFname
+    this.ImgurApiEndpoint = 'https://api.imgur.com/3/'
+    this.ImgurclientID = 'ff21f6fc51cefd4'
+    this.ImgurClientSecret = '1171169fafb675ad10775c312482dcc11d85b14f'
   }
   init() {
     chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
@@ -29,81 +31,84 @@ export default class EventTasks {
       console.log(data)
     })
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-      console.log(request.link)
+      console.log(request.message)
       switch (request.message) {
-        case 'downloadFile':
-          {
+        case 'downloadFile': {       
+          console.log(request)   
             this.url = request.link
             this.fileName = request.name
-            this.downloadFile()
-          }
-          break
-        case 'waifuist':
-        {
-          let ft = request.fol_title
-          let thpathprot = request.thrName
+            this.downloadFile()      
+            sendResponse({ success: true, response: 'downloaded!' })
         }
         break
-        case 'loadImgurPage' : {
+        case 'downloadBulk': {
+          // let links = []
+          // this.fileName =  request.name
+          // links.push(...request.links)
+          
+           const { linksArray } = request
+           console.log({ linksArray })
+           
+          this.downloadSequentially(linksArray)
+           sendResponse({ success: true, response: 'downloaded!' })
+            
+        }
+        break
+       
+        case 'loadImgurPage': {
+            this.url = request.link
+            console.log(request.link)
+            fetch(this.url)
+              .then(async (body) => {
+                let res = await body.json()
+                sendResponse({ success: true, response: res })
+              })
+              .catch(e => {
+                sendResponse({ success: false, response: 'unable to fetch' })
+              })
+        }
+        break
+        case 'loadGiphyPage' : {
           this.url = request.link
-          fetch(this.url).then(  async (resp) => {let m = await resp.text() ; console.log(m )})
+          this.fileName = request.title
+          console.log(request.title)
+          var self = this
+          fetch(this.url).then(async (response) => {
+            return response.text()
+          }).then((responseText) => {
+            const $ = cheerio.load(responseText)
+              $('meta').each(function (i, e) {
+                 if($(e).attr('property') == 'og:video:secure_url') {
+                    let url = $(e).attr('content')                    
+                    url = url.replace('media4','i')                  
+                    const stringArray = url.split('?')  
+                    self.url = stringArray[0]                   
+                    self.downloadFile()
 
+                 }
+              })               
+          })
+        } 
+        break
+        case 'loadPage' : {
+          const url = request.link
+          fetch(url).then(async (body) => {
+            let res = await body.text()
+            sendResponse({ success: true, response: res })
+          })
+          .catch(e => {
+            sendResponse({ success: false, response: 'unable to fetch' })
+          }) 
         }
         break
-        case 'getGfy':
-          {
-            this.fileName = convertToValidFilename(request.name)
-            let gurl = request.link,
-              src
-            fetch(gurl)
-              .then((response) => {
-                return response.text()
-              })
-              .then((responseText) => {
-                const $ = cheerio.load(responseText)
-                let ma = $('video.media')
-                  .find('source')
-                  .each((i, o) => {
-                    if (
-                      o.attribs.type == 'video/mp4' &&
-                      !o.attribs.src.includes('-mobile')
-                    ) {
-                      src = o.attribs.src
-                      console.log(src)
-                    }
-                  })
-                this.url = src
-                this.downloadFile()
-              })
-              .catch((error) => console.log('Error:', error))
-          }
-          break
-        case 'getRedditgif':
-          {
-            this.fileName = convertToValidFilename(request.name)
-            let gurl = request.link
-            fetch(gurl)
-              .then((response) => {
-                return response.json()
-              })
-              .then((resp) => {
-                console.log(resp)
-                var data =
-                  resp[0].data.children[0].data.preview.images[0].variants.mp4
-                    .source.url
-                if (data) {
-                  let daturl = data.replace('&amp;', '&')
-                  this.url = daturl
-                  this.downloadFile()
-                }
-              })
-          }
-          break
-        case 'redditVideo': {
-          let gname = convertToValidFilename(request.name)
-          let gurl = request.link
-          this.getRedditVid(gurl, gname)
+        case 'getAria' : {
+          const { txtstr, threadID , thrName, dirOut} = request
+          this.url = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txtstr);
+          this.fileName = threadID + '.txt'
+          this.downloadFile()
+          sendResponse({ success: true, response: 'Aria File downloaded!' })
         }
+        break
         default:
           return true
       }
@@ -138,13 +143,14 @@ export default class EventTasks {
           this.url = audioUrl
           // this.downloadFile()
           this.generateBatFile()
-           this.downloadFile()
+          this.downloadFile()
         }
       })
       .then(() => {})
   }
 
   downloadFile() {
+     
     chrome.downloads.download({
       url: this.url,
       conflictAction: 'uniquify',
@@ -153,43 +159,41 @@ export default class EventTasks {
   }
 
   generateBatFile() {
-   let batchStr = [
-     '@echo off',
-     'setlocal enabledelayedexpansion',
-     'chcp 65001',
-     'ffmpeg -version',
-     'if errorlevel 1 (',
-     '  echo "ffmpeg not found"',
-     '  @pause',
-     '  exit',
-     ')',
-     'SET "filename=' + this.videoFname + '"',
-     'echo "filename: %filename%"',
-     'echo "cd: %cd%"',
-     'dir',
-     '@pause',
-     "(FOR /R %%i IN (*.ts) DO @echo file 's/%%~nxi') > list.txt",
-     'ffmpeg -f concat -safe 0 -loglevel panic -i list.txt -c:a copy -vn "%filename%.mp3"',
-     'del "list.txt"',
-     'echo "success"',
-     '@pause',
-   ]
-     .join('\r\n')
-     .toString()
-    
-  
+    let batchStr = [
+      '@echo off',
+      'setlocal enabledelayedexpansion',
+      'chcp 65001',
+      'ffmpeg -version',
+      'if errorlevel 1 (',
+      '  echo "ffmpeg not found"',
+      '  @pause',
+      '  exit',
+      ')',
+      'SET "filename=' + this.videoFname + '"',
+      'echo "filename: %filename%"',
+      'echo "cd: %cd%"',
+      'dir',
+      '@pause',
+      "(FOR /R %%i IN (*.ts) DO @echo file 's/%%~nxi') > list.txt",
+      'ffmpeg -f concat -safe 0 -loglevel panic -i list.txt -c:a copy -vn "%filename%.mp3"',
+      'del "list.txt"',
+      'echo "success"',
+      '@pause',
+    ]
+      .join('\r\n')
+      .toString()
+
     // let url =
     //   'data:text/plain;base64,' +
-    //   '@echo off' 
+    //   '@echo off'
     //   ;
-    
-      let url = 'data:text/plain;base64,' +  batchStr 
+
+    let url = 'data:text/plain;base64,' + batchStr
     console.log({ url })
     this.url = url
     let filename = this.videoFname.replace('.mp4', '.bat')
     this.fileName = filename
     console.log('fname', this.fileName)
-      
   }
   getForum(gurl) {
     return new Promise((resolve, reject) => {
@@ -207,7 +211,29 @@ export default class EventTasks {
       }
     })
   }
+  async downloadSequentially(urls) {
+    for (const url of urls) {
+      if (!url) continue
+      const currentId = await this.download(url.link)
+      this.fileName = url.title
+      const success = await this.onDownloadComplete(currentId)       
+    }
+    return
+  }
 
+  download(url) {
+    return new Promise((resolve) => chrome.downloads.download({ url }, resolve))
+  }
+  onDownloadComplete(itemId) {
+    return new Promise((resolve) => {
+      chrome.downloads.onChanged.addListener(function onChanged({ id, state }) {
+        if (id === itemId && state && state.current !== 'in_progress') {
+          chrome.downloads.onChanged.removeListener(onChanged)
+          resolve(state.current === 'complete')
+        }
+      })
+    })
+  }
   // scrapeVid() {
   //    proc.addInput(`https://v.redd.it/${mediaId}/DASH_${res}`)
   //   .output(`${outputFolder}${mediaId}-${res}.mp4`)

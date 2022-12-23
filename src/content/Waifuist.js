@@ -1,54 +1,57 @@
+import ChanDownloader from './Chan'
 import $ from 'jquery'
 import '../content.css'
 import { convertToValidFilename } from '../utils'
 
-export default class Waifuist {
-  constructor() {
-    this.init()
-    this.post
-    this.url
-    this.sub
-    this.domain
-    this.ext
-    this.title
-    this.parts
-    this.folderName = ''
-    this.threadList
-    this.threadNum
-    this.threadName
-    this.mode
-    this.links = []
+export default class Waifuistw extends ChanDownloader {
+  constructor(domain) {
+    super()
+    // this.init()
+    this.appendButton()
+    this.domain = domain
+    this.getLinks()
+    this.downloadAriaEvent()
   }
-  init() {
-    this.setMenu()
+  appendButton() {
+    const titlepane = $('.opHead').first()
+    titlepane.append(this.dirDwn)
   }
+  getLinks() {
+    this.postTitle = convertToValidFilename(
+      $('.opCell').find('.labelSubject').text()
+    )
+    if (this.postTitle.length == 0 || this.postTitle == undefined) {
+      this.postTitle = convertToValidFilename(document.title)
+    }
 
-  setMenu() {
-    const titlepane = $('.opHead')
-    let thread = $('#threadList')
-    this.threadNum = $('#threadList').find('.opCell')[0].id
-    this.threadName = convertToValidFilename(document.title)
-    // console.log('name', this.threadName)
-    const Button = `<button id='imgDownload' class="ext-btn">Download</button>`
-    titlepane.append(Button)
+    this.threadID = $('.opCell').attr('id')
 
-    $('#imgDownload').on('click', (e) => {
+    const orLink = $('.opCell').find('.originalNameLink')
+
+    for (let i = 0; i < orLink.length; i++) {
+      let title = orLink[i].download != '' ? orLink[i].download : orLink[i].text
+      let link = orLink[i].href
+      this.downloadArray.push({ title, link })
+    }
+    console.log(this.downloadArray)
+  }
+  downloadAriaEvent() {
+    $('#dwnaria').on('click', (e) => {
       e.preventDefault()
-      this.downloadImages(thread)
+       
+      
+      this.appendModal().then(this.modalEvents())
+      // this.downloadAria()
     })
   }
+  async downloadFiles() {
+    let message = await this.sendMessage({
+      message: 'downloadBulk',
+      linksArray: this.downloadArray,
+    })
 
-  downloadImages(thread) {
-    let imageJson
-    this.threadList = $(thread).find('.uploadCell').find('.uploadDetails')
-
-    this.appendModal()
-      .then(() => {
-        this.addModalEvents()
-      })
-      .then(() => (this.title = document.title))
+    message.success ? console.log(message) : console.error(message)
   }
-
   appendModal() {
     return new Promise((resolve, reject) => {
       let modalDiv = `<div id="myfolderModal" class="ext-modal">
@@ -59,7 +62,7 @@ export default class Waifuist {
                         </header>
                         <div id="pagerows">
                             <div class="inp-row">
-                              <textarea id="foldername"></textarea>
+                              <textarea id="foldername">${this.postTitle} - ${this.threadID}</textarea>
                             </div>
                               <div class="inp-row" style="align-items: flex-start">
                                 <div class="ext-radio">
@@ -87,59 +90,20 @@ export default class Waifuist {
       resolve()
     })
   }
-
-  addModalEvents() {
-    let modal = $('#myfolderModal')
-    let span = $('.ext-close')[0]
-    $(span).on('click', (e) => {
-      $(modal).css('display', 'none')
+  modalEvents() {
+    $('.ext-close').on('click', (e) => {
+      $('#myfolderModal').remove()
     })
     $('#ext-getlinks').on('click', (e) => {
-      this.folderName = $('#foldername').val()
-      this.mode = $('input[name="mode"]:checked').val()
-
-      this.getImages().then(this.makeArray())
+      
+      if ($('input[name=mode]:checked').val() === 'aria2') {
+        let dirOut = `${this.postTitle} - ${this.threadID}`
+        console.log(dirOut) 
+        this.createAria2Array(dirOut)
+        this.downloadAria()
+      } else {
+        this.downloadFiles()
+      }
     })
-  }
-
-  getImages() {
-    return new Promise((resolve, reject) => {
-      let o = this.threadList.find('.originalNameLink')
-
-      let la = []
-
-      Array.from(o).forEach((el, n) => {
-        let m = {}
-        m['link'] = $(el).prop('href')
-        m['name'] = $(el).attr('download')
-        // console.log(m)
-        la.push(m)
-      })
-      this.links = la
-
-      resolve()
-    })
-  }
-
-  makeArray() {
-    if (this.mode == 'aria2') {
-      let txtstr = ''
-      this.links.forEach((i, o) => {
-        let fname = convertToValidFilename(i.name)
-        let dirOut = 'C:/Users/BSK/Downloads/' + this.threadName
-        console.log(i)
-        txtstr += `${i.link}\n\tout=${fname} \n\tdir=${dirOut}\n`
-      })
-
-      let href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txtstr)
-      let dname = this.threadNum + '.txt'
-
-      chrome.runtime.sendMessage(
-        { message: 'downloadFile', link: href, name: dname },
-        function (response) {
-          console.log({ response })
-        }
-      )
-    }
   }
 }

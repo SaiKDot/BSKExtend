@@ -1833,6 +1833,481 @@ module.exports = {
 
 /***/ }),
 
+/***/ "./src/content/4Archive.js":
+/*!*********************************!*\
+  !*** ./src/content/4Archive.js ***!
+  \*********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ _4Archive)
+/* harmony export */ });
+/* harmony import */ var _Chan__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Chan */ "./src/content/Chan.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_1__);
+
+
+class _4Archive extends _Chan__WEBPACK_IMPORTED_MODULE_0__.default {
+  constructor() {
+    super();
+    this.appendButton();
+    this.getLinks();
+    this.downloadFiles();
+    this.downloadAriaEvent();
+  }
+
+  appendButton() {
+    jquery__WEBPACK_IMPORTED_MODULE_1___default()('.file').first().append(this.dirDwn);
+  }
+
+  getLinks() {
+    let h2t = jquery__WEBPACK_IMPORTED_MODULE_1___default()('.postInfo').find('.subject').text();
+    h2t = h2t.replace(/[^a-z0-9\s]/gi, '').replace(/\s*$/, '').trim();
+    console.log(h2t);
+    let xf = jquery__WEBPACK_IMPORTED_MODULE_1___default()('.postMessage').first().text();
+    let snt = xf.split(' ').slice(0, 6).join(' ').trim().replace(/[^a-z0-9\s]/gi, '');
+    snt = snt.replace(/\n/g, ' ');
+    snt = snt.replace('br', ' ');
+    this.postTitle = h2t == '' || h2t == null ? snt : h2t;
+    this.threadID = jquery__WEBPACK_IMPORTED_MODULE_1___default()('.thread').first().attr('id').replace('t', '');
+    const links = jquery__WEBPACK_IMPORTED_MODULE_1___default()('.postContainer').find('.fileText').find('a:first');
+    links.each((i, o) => {
+      let lname = o.text;
+      let title = o.title;
+      title = title.replace('Full size of ', '');
+      let filename;
+
+      if (title == null || title == '' || title == undefined) {
+        filename = lname.substring(lname.lastIndexOf('/') + 1);
+      } else {
+        filename = title;
+      }
+
+      var url = o.href;
+      this.downloadArray.push({
+        title: filename,
+        link: url
+      });
+    });
+  }
+
+  downloadFiles() {
+    jquery__WEBPACK_IMPORTED_MODULE_1___default()('#drDwn').on('click', async () => {
+      let message = await this.sendMessage({
+        message: 'downloadBulk',
+        linksArray: this.downloadArray
+      });
+      message.success ? console.log(message) : console.error(message);
+    });
+  }
+
+  downloadAriaEvent() {
+    jquery__WEBPACK_IMPORTED_MODULE_1___default()('#dwnaria').on('click', () => {
+      let dirOut = `${this.postTitle} - ${this.threadID}`;
+      console.log(dirOut);
+      this.createAria2Array(dirOut);
+      this.downloadAria();
+    });
+  }
+
+}
+
+/***/ }),
+
+/***/ "./src/content/4chan.js":
+/*!******************************!*\
+  !*** ./src/content/4chan.js ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ _4chanManager)
+/* harmony export */ });
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
+
+
+class _4chanManager {
+  constructor() {
+    this.addButton();
+    this.addListener();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()('.thread').on('DOMNodeInserted', function (e) {
+      console.log(e.target.parentNode);
+    });
+  }
+
+  addButton() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()('.postContainer').find('.fileText').remove('.exbutton').append('<button class="exbutton d1" type="button">download</button>');
+  }
+
+  addListener() {
+    var self = this;
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).off().on('click', '.exbutton', function (e) {
+      e.preventDefault();
+      const file = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this).closest('.file')[0];
+      self.getData(file);
+    });
+  }
+
+  getData(el) {
+    console.log(el);
+    let link = jquery__WEBPACK_IMPORTED_MODULE_0___default()(el).find('.fileText').find('a').attr('href');
+    link = 'https:' + link;
+    let text = jquery__WEBPACK_IMPORTED_MODULE_0___default()(el).find('.fileText').find('a').attr('title');
+
+    if (text == undefined || text === '') {
+      text = jquery__WEBPACK_IMPORTED_MODULE_0___default()(el).find('.fileText').find('a').text();
+    }
+
+    let ext = link.split('.').pop();
+    let name = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.convertToValidFilename)(text) + '.' + ext;
+    name = name.replace(/\.[^/.]+$/, '');
+    chrome.runtime.sendMessage({
+      message: 'downloadFile',
+      link: link,
+      name: name
+    }, response => {
+      if (response.success) {
+        console.log(response);
+      } else {}
+    });
+  }
+
+}
+
+/***/ }),
+
+/***/ "./src/content/Archived.Moe.js":
+/*!*************************************!*\
+  !*** ./src/content/Archived.Moe.js ***!
+  \*************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ArchivedMoe)
+/* harmony export */ });
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
+
+class ArchivedMoe {
+  constructor() {
+    this.links = [];
+    this.addButton();
+    this.domains = {
+      an: 'https://desu-usergeneratedcontent.xyz/',
+      default: 'https://thebarchive.com/data/',
+      b: 'https://thebarchive.com/data/'
+    };
+    this.desu = ['an', 'fit'];
+    this.board;
+    this.link;
+    this.title;
+    this.ext;
+  }
+
+  addButton() {
+    const button = jquery__WEBPACK_IMPORTED_MODULE_0___default()(`<button class="download_post">Download </button>`);
+    this.fileNameEl = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.post_file').find('a.post_file_filename'); // $('.post_file_controls').append(button)
+
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()('.post_file').append(button);
+    this.addButtonEvent(this.fileNameEl); // this.addLinks(this.fileNameEl)
+  }
+
+  addLinks(fileNameEl) {
+    Array.from(fileNameEl).forEach(element => {
+      const link = jquery__WEBPACK_IMPORTED_MODULE_0___default()(element).attr('href');
+      let title = jquery__WEBPACK_IMPORTED_MODULE_0___default()(element).attr('title');
+
+      if (title === '' || title == undefined) {
+        title = jquery__WEBPACK_IMPORTED_MODULE_0___default()(element).text();
+      }
+
+      this.links.push({
+        link,
+        title
+      });
+    });
+    return;
+  }
+
+  addButtonEvent() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).on('click', '.download_post', e => {
+      this.getData(e.target);
+    });
+  }
+
+  getData(butn) {
+    let thumb = jquery__WEBPACK_IMPORTED_MODULE_0___default()(butn).closest('.post_wrapper').find('.post_image').attr('src');
+    let imglnkEL = jquery__WEBPACK_IMPORTED_MODULE_0___default()(butn).closest('.thread_image_box').find('.thread_image_link'); // .attr('href')
+
+    if (imglnkEL.length == 0) {
+      imglnkEL = jquery__WEBPACK_IMPORTED_MODULE_0___default()(butn).closest('.post_wrapper').find('.post_file_filename');
+    }
+
+    let imglnk = imglnkEL.attr('title');
+
+    if (imglnk == '') {
+      imglnk = imglnkEL.text();
+    }
+
+    this.ext = imglnk.split('/').pop().split('.').pop();
+    this.title = jquery__WEBPACK_IMPORTED_MODULE_0___default()(butn).closest('.post_file').find('.post_file_filename').text();
+
+    if (thumb === undefined) {
+      thumb = jquery__WEBPACK_IMPORTED_MODULE_0___default()(butn).closest('.thread_image_box').find('img.post_image').attr('src');
+    }
+
+    this.board = this.getBoard(thumb);
+    const split = thumb.split('/thumb/');
+    let filelnk = split[1].replace('s.', '.');
+    this.link = this.formLink(split[0], filelnk);
+    console.log(this.link, this.title);
+    chrome.runtime.sendMessage({
+      message: 'downloadFile',
+      link: this.link,
+      name: this.title
+    }, response => {
+      if (response.success) {
+        console.log(response);
+      } else {
+        console.log(response);
+      }
+    });
+  }
+
+  getBoard(str) {
+    str = str.replace('https://', '');
+    const split1 = str.split('/');
+    return split1[2];
+  }
+
+  formLink(part1, part2) {
+    part2 = part2.substring(0, part2.indexOf('.'));
+    part2 = part2 + '.' + this.ext;
+    part1 = part1.replace('https://archived.moe/files/', this.domains[this.board]);
+    let l = part1 + '/image/' + part2;
+    return l;
+  }
+
+}
+
+/***/ }),
+
+/***/ "./src/content/Chan.js":
+/*!*****************************!*\
+  !*** ./src/content/Chan.js ***!
+  \*****************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ChanDownlaoder)
+/* harmony export */ });
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_1__);
+
+
+class ChanDownlaoder {
+  constructor(array) {
+    // this.array = array
+    this.dirDwn = '<button class="skButton" id="dwnaria"> Download Aria</button> <button class="skButton" id="drDwn">Download Images</button> ';
+    this.dirSpan = '<span class="skButton" id="dwnaria"> Download Aria</span> <span class="skButton" id="drDwn">Download Images</span> ';
+    this.postTitle;
+    this.threadID;
+    this.downloadArray = [];
+    this.dirOut;
+    this.txtstr = ''; // this.appendLocationModal() //remove the function
+    // this.removeEvent() //remove the function
+    // this.downloadAriaEvent()
+  }
+
+  createAria2Array(dirOut) {
+    jquery__WEBPACK_IMPORTED_MODULE_1___default().each(this.downloadArray, (i, val) => {
+      let title = (0,_utils__WEBPACK_IMPORTED_MODULE_0__.convertToValidFilename)(val.title);
+      this.txtstr += `${val.link}\n\tout=${title} \n\tdir=${this.postTitle} - ${this.threadID}\n`;
+    });
+  }
+
+  appendLocationModal() {
+    let modalDiv = `<div id="myfolderModal" class="ext-modal">
+                      <div class="ext-modal-content">
+                        <header class="ext-modal-header"> 
+                          <span class="ext-close">&times;</span> 
+                          <h3>Folder Name</h3>
+                        </header>
+                        <div id="pagerows">
+                            <div class="inp-row">
+                              <textarea id="foldername"> </textarea>
+                            </div>                              
+                          <div class="inp-row">
+                             <button id="ext-getlinks" class="ext-btn">Download</button>
+                          </dv>
+                        </div>
+                      </div>
+                    </div>`;
+
+    if (jquery__WEBPACK_IMPORTED_MODULE_1___default()('body').find('#myfolderMfoldernameodal').length == 0) {
+      jquery__WEBPACK_IMPORTED_MODULE_1___default()('body').append(modalDiv);
+      jquery__WEBPACK_IMPORTED_MODULE_1___default()('#myfolderModal').css('display', 'none');
+    } else {
+      jquery__WEBPACK_IMPORTED_MODULE_1___default()('#myfolderModal').css('display', 'none');
+    }
+  }
+
+  revealModal() {
+    jquery__WEBPACK_IMPORTED_MODULE_1___default()('#myfolderModal').css('display', 'block');
+  } // removeEvent() {
+  //   const close = $('.ext-close')[0]
+  //   $(close).on('click', function (e) {
+  //     const modal = $('.ext-modal').first()
+  //     $(modal).css('display', 'none')
+  //   })
+  // }
+
+
+  async downloadAria() {
+    let message = await this.sendMessage({
+      message: 'getAria',
+      txtstr: this.txtstr,
+      threadID: this.threadID,
+      thrName: this.postTitle,
+      dirOut: this.dirOut
+    });
+    message.success ? console.log(message) : console.error(message);
+  }
+
+  sendMessage(request) {
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(request, response => {
+        if (response.success) {
+          resolve(response);
+        } else {
+          reject(response);
+        }
+      });
+    });
+  }
+
+}
+
+/***/ }),
+
+/***/ "./src/content/ChanArchive.js":
+/*!************************************!*\
+  !*** ./src/content/ChanArchive.js ***!
+  \************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ChanArchive)
+/* harmony export */ });
+/* harmony import */ var _Chan__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Chan */ "./src/content/Chan.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_1__);
+
+
+class ChanArchive extends _Chan__WEBPACK_IMPORTED_MODULE_0__.default {
+  constructor(domain) {
+    super();
+    this.appendButton();
+    this.domain = domain;
+    this.getLinks(); // this.revealModalEvent() //remove the function
+
+    this.downloadFiles();
+    this.downloadAriaEvent();
+  }
+
+  appendButton() {
+    jquery__WEBPACK_IMPORTED_MODULE_1___default()('header > .post_data').first().append(this.dirDwn);
+  }
+
+  getLinks() {
+    const article = jquery__WEBPACK_IMPORTED_MODULE_1___default()('article.thread:first')[0];
+    this.threadID = jquery__WEBPACK_IMPORTED_MODULE_1___default()(article).data('thread-num');
+    let h2t = jquery__WEBPACK_IMPORTED_MODULE_1___default()(article).find('.post_title').text();
+    h2t = h2t.replace(/[^a-z0-9\s]/gi, '').replace(/\s*$/, '').trim();
+    var xf = jquery__WEBPACK_IMPORTED_MODULE_1___default()('.text').first().text();
+    var snt = xf.split(' ').slice(0, 6).join(' ').trim().replace(/[^a-z0-9\s]/gi, '');
+    this.postTitle = h2t == '' || h2t == null || typeof h2t === undefined ? snt : h2t;
+    const links = jquery__WEBPACK_IMPORTED_MODULE_1___default()(article).find('.post_file_filename');
+    links.each((i, o) => {
+      let fi_con, link;
+      fi_con = jquery__WEBPACK_IMPORTED_MODULE_1___default()(o).closest('.post_file').find('.post_file_controls');
+
+      if (fi_con.length == 0) {
+        fi_con = jquery__WEBPACK_IMPORTED_MODULE_1___default()(o).closest('.post_file').siblings('.post_file_controls');
+      }
+
+      if (this.domain != 'archived.moe') {
+        const url_A = fi_con.find('a:last')[0];
+        link = jquery__WEBPACK_IMPORTED_MODULE_1___default()(url_A).attr('href');
+      } else {
+        link = this.archivedMoeLinks(fi_con, i);
+      }
+
+      let lname = o.text;
+      let fname = o.title;
+      let title;
+
+      if (fname == null || fname == '' || typeof fname == undefined) {
+        title = lname.substring(lname.lastIndexOf('/') + 1); //console.log('nofilename', o.href, filename)
+      } else {
+        title = fname; //console.log('hasfilename', filename)
+      }
+
+      this.downloadArray.push({
+        title,
+        link
+      });
+    });
+  }
+
+  archivedMoeLinks(fi_con, i) {
+    let a;
+
+    if (i == 0) {
+      a = fi_con.siblings('.post_file').find('.post_file_filename');
+    } else {
+      a = fi_con.siblings('.post_file_filename');
+    }
+
+    return jquery__WEBPACK_IMPORTED_MODULE_1___default()(a).attr('href'); // console.log($(a).attr('href'))
+  }
+
+  downloadFiles() {
+    jquery__WEBPACK_IMPORTED_MODULE_1___default()('#drDwn').on('click', async () => {
+      let message = await this.sendMessage({
+        message: 'downloadBulk',
+        linksArray: this.downloadArray
+      });
+      message.success ? console.log(message) : console.error(message);
+    });
+  }
+
+  downloadAriaEvent() {
+    jquery__WEBPACK_IMPORTED_MODULE_1___default()('#dwnaria').on('click', () => {
+      let dirOut = `${this.postTitle} - ${this.threadID}`;
+      console.log(dirOut);
+      this.createAria2Array(dirOut);
+      this.downloadAria();
+    });
+  }
+
+}
+
+/***/ }),
+
 /***/ "./src/content/Reddit.js":
 /*!*******************************!*\
   !*** ./src/content/Reddit.js ***!
@@ -1855,7 +2330,18 @@ __webpack_require__.r(__webpack_exports__);
 
 class Reddit {
   constructor() {
-    this.post, this.url, this.sub, this.domain, this.ext, this.title, this.parts, this.postIdContainer = [], this.lastLength = 0, this.supportedExtensions = ['png', 'jpg', 'jpeg', 'gif', 'gifv', 'mp4', 'mp3'];
+    var self = this;
+    this.post, this.url, this.sub, this.domain, this.ext, this.title, this.parts, this.media_metadata, this.postIdContainer = [], this.lastLength = 0, this.supportedExtensions = ['png', 'jpg', 'jpeg', 'gif', 'gifv', 'mp4', 'mp3'];
+    this._ApiEndpoint = 'https://api.imgur.com/3/';
+    this.imgurInfo;
+    chrome.storage.sync.set({
+      imgurInfo: {
+        client_id: 'ff21f6fc51cefd4'
+      }
+    });
+    chrome.storage.sync.get(['imgurInfo'], function (result) {
+      self.imgurInfo = result.imgurInfo;
+    });
     this.init();
   }
 
@@ -1944,7 +2430,8 @@ class Reddit {
     href += '.json';
     const req = await fetch(href);
     const resp = await req.json();
-    const data = resp[0].data.children[0].data;
+    const data = resp[0].data.children[0].data; // console.log(JSON.stringify(data))
+
     console.log(data);
     this.url = data.url;
 
@@ -1956,6 +2443,14 @@ class Reddit {
     this.ext = this.url.split('.').pop();
     this.domain = data.domain;
     this.title = data.title;
+    this.media_metadata = data.media_metadata;
+
+    if ((this.media_metadata == null || this.media_metadata == undefined) && data.crosspost_parent_list) {
+      this.media_metadata = data.crosspost_parent_list[0].media_metadata;
+    }
+
+    this.fallbackUrl = data.secure_media.reddit_video.fallback_url;
+    this.fallbackUrl = this.fallbackUrl.replace('?source=fallback', '');
 
     if (this.supportedExtensions.includes(this.ext)) {
       this.directDownload();
@@ -1971,17 +2466,19 @@ class Reddit {
   }
 
   delegateDomain() {
+    console.log(this.domain);
+
     switch (this.domain) {
-      case 'imgur.com':
-        this.getImgur();
-        break;
-
       case 'i.imgur.com':
-        this.imgurDirectDownload();
+      case 'imgur.com':
+        {
+          const imgurDownloader = new ImgurDownloader(this.url, this.domain, this.sub, this.title); // imgurDownloader.getImages()
+        }
         break;
 
+      case '//gfycat.com/':
       case 'gfycat.com':
-        this.getGfycat();
+        const gfycat = new GfyCatDownloader(this.url, this.domain, this.sub, this.title);
         break;
 
       case 'i.redd.it':
@@ -1989,7 +2486,26 @@ class Reddit {
         break;
 
       case 'v.redd.it':
-        this.getRedditVideo();
+        this.getRedditVideo = new RedditVideo(this.url, this.domain, this.sub, this.title, this.media_metadata, this.fallbackUrl);
+        break;
+
+      case 'reddit.com':
+        {
+          const redditdownload = new RedditDownloader(this.url, this.domain, this.sub, this.title, this.media_metadata);
+        }
+        break;
+
+      case 'giphy.com':
+        {
+          const giphydownload = new GiphyDownloader(this.url, this.domain, this.sub, this.title);
+        }
+        break;
+
+      case '//redgifs.com':
+      case 'redgifs.com':
+        {
+          const redgifs = new RedGifsDownloader(this.url, this.domain, this.sub, this.title);
+        }
         break;
 
       default:
@@ -1997,24 +2513,87 @@ class Reddit {
     }
   }
 
-  getImgur() {
-    let id = this.url.replace(/.*\//gim, '');
-    let isAlbum = this.url.replace(/.*imgur.com\//gim, '').startsWith('a');
-    return isAlbum ? this.getAlbumLinks(id) : this.getGalleryLinks(id);
-  }
+}
 
-  async getGalleryLinks() {
-    chrome.runtime.sendMessage({
-      message: 'loadImgurPage',
-      link: this.url
-    }, function (response) {
-      console.log({
-        response
+class BaseDownloader {
+  sendMessage(request) {
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(request, response => {
+        if (response.success) {
+          resolve(response);
+        } else {
+          reject(response);
+        }
       });
     });
   }
 
-  imgurDirectDownload() {
+}
+
+class ImgurDownloader extends BaseDownloader {
+  constructor(url, domain, sub, title) {
+    super();
+    this.url = url, this.domain = domain, this.sub = sub, this.title = title, // this.apiUrl,
+    this.ext;
+    this.init();
+  }
+
+  init() {
+    console.log('domain', this.domain);
+    this.domain == 'imgur.com' ? this.getAlbum() : this.imgurDirectDownload();
+  }
+
+  getAlbum() {
+    let albumID = this.url.replace(/.*\//gim, '');
+    let isAlbum = this.url.replace(/.*imgur.com\//gim, '').startsWith('a'); // this.apiUrl = `https://imgur.com/gallery/${albumID}.json`
+
+    return this.getGalleryLinks(albumID);
+  }
+
+  async getGalleryLinks(albumID) {
+    var self = this;
+    let data;
+    let message = await this.sendMessage({
+      message: 'loadImgurPage',
+      link: `https://imgur.com/gallery/${albumID}.json`
+    });
+    console.log(message);
+    message.success ? data = message.response.data.image : console.error(message);
+
+    if (data.is_album == true || data.in_gallery == true) {
+      let imgData;
+
+      if (data.is_album == true) {
+        imgData = data.album_images.images;
+      } else {
+        this.ext = data.ext;
+        imgData = data.galleryTags;
+      }
+
+      let i = 0;
+      let links = imgData.reduce((a, c) => {
+        i++;
+        let ext = c.ext ? c.ext : self.ext;
+        let link = `https://i.imgur.com/${c.hash}${ext}`;
+        let title = `${(0,_utils__WEBPACK_IMPORTED_MODULE_2__.convertToValidFilename)(this.title)} - ${this.sub} [${i}]${ext}`; // let title = convertToValidFilename(this.title) + ' - ' + i + ext
+
+        a.push({
+          link,
+          title
+        });
+        return a;
+      }, []);
+      let m = await this.sendMessage({
+        message: 'downloadBulk',
+        links: links
+      });
+      return;
+    }
+
+    return;
+  }
+
+  async imgurDirectDownload() {
     let post = this.post,
         sub = this.sub,
         ext = this.ext,
@@ -2032,43 +2611,225 @@ class Reddit {
     }
 
     title = (0,_utils__WEBPACK_IMPORTED_MODULE_2__.convertToValidFilename)(title);
-    chrome.runtime.sendMessage({
+    let mes = await this.sendMessage({
       message: 'downloadFile',
       link: url,
       name: title
-    }, function (response) {
-      console.log({
-        response
-      });
     });
+    mes.response ? console.log(mes.response) : console.info(mes.error);
+    return;
   }
 
-  directDownload() {
+  async directDownload() {
     let post = this.post,
         sub = this.sub,
         ext = this.ext,
         dwnUrl = this.url,
         title = (0,_utils__WEBPACK_IMPORTED_MODULE_2__.convertToValidFilename)(this.title);
-    console.log({
-      title
-    });
     title = title + '-' + sub + '.' + ext;
 
     if (ext == 'gifv' || ext == 'gif') {
       dwnUrl = dwnUrl.slice(0, -4) + 'mp4';
-      console.log(dwnUrl);
       title = title.replace('gifv', 'mp4');
     }
 
-    chrome.runtime.sendMessage({
+    let mes = await this.sendMessage({
       message: 'downloadFile',
       link: dwnUrl,
       name: title
-    }, function (response) {
-      console.log({
-        response
+    });
+  }
+
+}
+
+class RedditDownloader extends BaseDownloader {
+  constructor(url, domain, sub, title, media_metadata) {
+    super();
+    this.url = url, this.domain = domain, this.sub = sub, this.title = title, // thisredditVideo.ext,
+    this.media_metadata = media_metadata;
+    this.videoFname;
+    this.fallback_url = fallback_url;
+    this.init();
+  }
+
+  init() {
+    if (this.domain = 'v.reddit.com') this.redditVideo();
+    this.url.includes('reddit.com/gallery/') ? this.redditGallery() : console.log('default');
+  }
+
+  async redditGallery() {
+    var self = this;
+    let media_keys = Object.keys(this.media_metadata);
+    let links = [];
+    media_keys.forEach((k, i) => {
+      const key = k;
+
+      const link = (0,_utils__WEBPACK_IMPORTED_MODULE_2__._removeAmpSymbols)(this.media_metadata[k].s.u);
+
+      const title = `${this.title} - ${self.sub} [${i}].${(0,_utils__WEBPACK_IMPORTED_MODULE_2__.getExt)(this.media_metadata[k].m)}`;
+      links.push({
+        link,
+        title
       });
     });
+    console.log(links);
+    if (!Array.isArray(links)) links = [links];
+    let m = await this.sendMessage({
+      message: 'downloadBulk',
+      links: links
+    });
+    console.log(m.response);
+    return;
+  }
+
+}
+
+class RedditVideo extends BaseDownloader {
+  constructor(url, domain, sub, title, media_metadata, fallback_url) {
+    super();
+    this.url = url, this.domain = domain, this.sub = sub, this.title = title, this.media_metadata = media_metadata;
+    this.videoFname;
+    this.fallback_url = fallback_url;
+    this.fileName;
+    this.getVid();
+  }
+
+  getVid() {
+    this.title = this.title + '-' + this.sub + '.mp4';
+    let vidUrl = this.fallback_url;
+    let dash = this.getDash(this.fallback_url);
+    let videofname = this.title.replace('.mp4', '-video.mp4');
+    console.log({
+      vidUrl,
+      videofname
+    });
+    let audiofname = videofname.replace('-video.mp4', '-audio.mp4a'); // this.fileName = this.audioFname = fname
+
+    let aurl = vidUrl.split('DASH_480.mp4')[0];
+    console.log({
+      aurl
+    });
+    let audioUrl = aurl + 'DASH_audio.mp4';
+    console.log({
+      audioUrl
+    });
+  }
+
+  getDash(url) {
+    var surl = url.substring(url.indexOf('dash_') + 1, url.lastIndexOf('.'));
+    console.log({
+      surl
+    });
+  }
+
+}
+
+class GiphyDownloader extends BaseDownloader {
+  constructor(url, domain, sub, title) {
+    super();
+    this.url = url, this.domain = domain, this.sub = sub, this.title = title, this.ext;
+    this.init();
+  }
+
+  async init() {
+    const title = `${(0,_utils__WEBPACK_IMPORTED_MODULE_2__.convertToValidFilename)(this.title)} - ${this.sub}.mp4`;
+    let message = await this.sendMessage({
+      message: 'loadGiphyPage',
+      link: this.url,
+      title: title
+    });
+    message.success ? data = message.response.data.image : console.error(message);
+  }
+
+}
+
+class GfyCatDownloader extends BaseDownloader {
+  constructor(url, domain, sub, title) {
+    super();
+    this.url = url, this.domain = domain, this.sub = sub, this.title = title, this.ext;
+    this.init();
+  }
+
+  async init() {
+    let title = `${this.title} - ${this.sub}.mp4`;
+    let link = this.formLink();
+    const message = await this.sendMessage({
+      message: 'loadgfycatpage',
+      link: this.url
+    });
+    message.success ? this.url = this.parsePage(message.response) : console.error(message);
+    await this.sendMessage({
+      message: 'downloadFile',
+      name: title,
+      link: this.url
+    });
+    return;
+  }
+
+  parsePage(dat) {
+    const dom = jquery__WEBPACK_IMPORTED_MODULE_0___default()(dat);
+    let url;
+    dom.filter('script').each(function () {
+      const obj = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this);
+      const tag = obj[0];
+
+      if (tag.type == 'application/ld+json') {
+        let l = jquery__WEBPACK_IMPORTED_MODULE_0___default()(tag)[0];
+        let str = l.innerHTML;
+        let ev = JSON.parse(str);
+        const mp4Url = ev.video.contentUrl;
+        url = mp4Url;
+        return;
+      }
+    });
+    return url;
+  }
+
+}
+
+class RedGifsDownloader extends BaseDownloader {
+  constructor(url, domain, sub, title) {
+    super();
+    this.url = url, this.domain = domain, this.sub = sub, this.title = title, this.ext;
+    this.init();
+  }
+
+  async init() {
+    // const link  = this.getLink()
+    const title = `${this.title} - ${this.sub}.mp4`;
+    const message = await this.sendMessage({
+      message: 'loadPage',
+      link: this.url
+    });
+    message.success ? this.url = this.parsePage(message.response) : console.error(message);
+    await this.sendMessage({
+      message: 'downloadFile',
+      name: title,
+      link: this.url
+    });
+    return;
+  }
+
+  parsePage(dat) {
+    const dom = jquery__WEBPACK_IMPORTED_MODULE_0___default()(dat);
+    let url;
+    dom.filter('script').each(function () {
+      const obj = jquery__WEBPACK_IMPORTED_MODULE_0___default()(this);
+      const tag = obj[0];
+
+      if (tag.type == 'application/ld+json') {
+        let l = jquery__WEBPACK_IMPORTED_MODULE_0___default()(tag)[0];
+        let str = l.innerHTML;
+        let ev = JSON.parse(str);
+        console.log(ev);
+        let mp4Url = ev.video.contentUrl;
+        mp4Url = mp4Url.replace('-mobile.mp4', '.mp4');
+        url = mp4Url;
+        console.log(url);
+        return;
+      }
+    });
+    return url;
   }
 
 }
@@ -2084,57 +2845,67 @@ class Reddit {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ Waifuist)
+/* harmony export */   "default": () => (/* binding */ Waifuistw)
 /* harmony export */ });
-/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
-/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _content_css__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../content.css */ "./src/content.css");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
+/* harmony import */ var _Chan__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Chan */ "./src/content/Chan.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _content_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../content.css */ "./src/content.css");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
 
 
 
-class Waifuist {
-  constructor() {
-    this.init();
-    this.post;
-    this.url;
-    this.sub;
-    this.domain;
-    this.ext;
-    this.title;
-    this.parts;
-    this.folderName = '';
-    this.threadList;
-    this.threadNum;
-    this.threadName;
-    this.mode;
-    this.links = [];
+
+class Waifuistw extends _Chan__WEBPACK_IMPORTED_MODULE_0__.default {
+  constructor(domain) {
+    super(); // this.init()
+
+    this.appendButton();
+    this.domain = domain;
+    this.getLinks();
+    this.downloadAriaEvent();
   }
 
-  init() {
-    this.setMenu();
+  appendButton() {
+    const titlepane = jquery__WEBPACK_IMPORTED_MODULE_1___default()('.opHead').first();
+    titlepane.append(this.dirDwn);
   }
 
-  setMenu() {
-    const titlepane = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.opHead');
-    let thread = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#threadList');
-    this.threadNum = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#threadList').find('.opCell')[0].id;
-    this.threadName = (0,_utils__WEBPACK_IMPORTED_MODULE_2__.convertToValidFilename)(document.title); // console.log('name', this.threadName)
+  getLinks() {
+    this.postTitle = (0,_utils__WEBPACK_IMPORTED_MODULE_3__.convertToValidFilename)(jquery__WEBPACK_IMPORTED_MODULE_1___default()('.opCell').find('.labelSubject').text());
 
-    const Button = `<button id='imgDownload' class="ext-btn">Download</button>`;
-    titlepane.append(Button);
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()('#imgDownload').on('click', e => {
+    if (this.postTitle.length == 0 || this.postTitle == undefined) {
+      this.postTitle = (0,_utils__WEBPACK_IMPORTED_MODULE_3__.convertToValidFilename)(document.title);
+    }
+
+    this.threadID = jquery__WEBPACK_IMPORTED_MODULE_1___default()('.opCell').attr('id');
+    const orLink = jquery__WEBPACK_IMPORTED_MODULE_1___default()('.opCell').find('.originalNameLink');
+
+    for (let i = 0; i < orLink.length; i++) {
+      let title = orLink[i].download != '' ? orLink[i].download : orLink[i].text;
+      let link = orLink[i].href;
+      this.downloadArray.push({
+        title,
+        link
+      });
+    }
+
+    console.log(this.downloadArray);
+  }
+
+  downloadAriaEvent() {
+    jquery__WEBPACK_IMPORTED_MODULE_1___default()('#dwnaria').on('click', e => {
       e.preventDefault();
-      this.downloadImages(thread);
+      this.appendModal().then(this.modalEvents()); // this.downloadAria()
     });
   }
 
-  downloadImages(thread) {
-    let imageJson;
-    this.threadList = jquery__WEBPACK_IMPORTED_MODULE_0___default()(thread).find('.uploadCell').find('.uploadDetails');
-    this.appendModal().then(() => {
-      this.addModalEvents();
-    }).then(() => this.title = document.title);
+  async downloadFiles() {
+    let message = await this.sendMessage({
+      message: 'downloadBulk',
+      linksArray: this.downloadArray
+    });
+    message.success ? console.log(message) : console.error(message);
   }
 
   appendModal() {
@@ -2147,7 +2918,7 @@ class Waifuist {
                         </header>
                         <div id="pagerows">
                             <div class="inp-row">
-                              <textarea id="foldername"></textarea>
+                              <textarea id="foldername">${this.postTitle} - ${this.threadID}</textarea>
                             </div>
                               <div class="inp-row" style="align-items: flex-start">
                                 <div class="ext-radio">
@@ -2166,67 +2937,31 @@ class Waifuist {
                       </div>
                     </div>`;
 
-      if (jquery__WEBPACK_IMPORTED_MODULE_0___default()('body').find('#myfolderModal').length == 0) {
-        jquery__WEBPACK_IMPORTED_MODULE_0___default()('body').append(modalDiv);
-        jquery__WEBPACK_IMPORTED_MODULE_0___default()('#myfolderModal').css('display', 'block');
+      if (jquery__WEBPACK_IMPORTED_MODULE_1___default()('body').find('#myfolderModal').length == 0) {
+        jquery__WEBPACK_IMPORTED_MODULE_1___default()('body').append(modalDiv);
+        jquery__WEBPACK_IMPORTED_MODULE_1___default()('#myfolderModal').css('display', 'block');
       } else {
-        jquery__WEBPACK_IMPORTED_MODULE_0___default()('#myfolderModal').css('display', 'block');
+        jquery__WEBPACK_IMPORTED_MODULE_1___default()('#myfolderModal').css('display', 'block');
       }
 
       resolve();
     });
   }
 
-  addModalEvents() {
-    let modal = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#myfolderModal');
-    let span = jquery__WEBPACK_IMPORTED_MODULE_0___default()('.ext-close')[0];
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(span).on('click', e => {
-      jquery__WEBPACK_IMPORTED_MODULE_0___default()(modal).css('display', 'none');
+  modalEvents() {
+    jquery__WEBPACK_IMPORTED_MODULE_1___default()('.ext-close').on('click', e => {
+      jquery__WEBPACK_IMPORTED_MODULE_1___default()('#myfolderModal').remove();
     });
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()('#ext-getlinks').on('click', e => {
-      this.folderName = jquery__WEBPACK_IMPORTED_MODULE_0___default()('#foldername').val();
-      this.mode = jquery__WEBPACK_IMPORTED_MODULE_0___default()('input[name="mode"]:checked').val();
-      this.getImages().then(this.makeArray());
+    jquery__WEBPACK_IMPORTED_MODULE_1___default()('#ext-getlinks').on('click', e => {
+      if (jquery__WEBPACK_IMPORTED_MODULE_1___default()('input[name=mode]:checked').val() === 'aria2') {
+        let dirOut = `${this.postTitle} - ${this.threadID}`;
+        console.log(dirOut);
+        this.createAria2Array(dirOut);
+        this.downloadAria();
+      } else {
+        this.downloadFiles();
+      }
     });
-  }
-
-  getImages() {
-    return new Promise((resolve, reject) => {
-      let o = this.threadList.find('.originalNameLink');
-      let la = [];
-      Array.from(o).forEach((el, n) => {
-        let m = {};
-        m['link'] = jquery__WEBPACK_IMPORTED_MODULE_0___default()(el).prop('href');
-        m['name'] = jquery__WEBPACK_IMPORTED_MODULE_0___default()(el).attr('download'); // console.log(m)
-
-        la.push(m);
-      });
-      this.links = la;
-      resolve();
-    });
-  }
-
-  makeArray() {
-    if (this.mode == 'aria2') {
-      let txtstr = '';
-      this.links.forEach((i, o) => {
-        let fname = (0,_utils__WEBPACK_IMPORTED_MODULE_2__.convertToValidFilename)(i.name);
-        let dirOut = 'C:/Users/BSK/Downloads/' + this.threadName;
-        console.log(i);
-        txtstr += `${i.link}\n\tout=${fname} \n\tdir=${dirOut}\n`;
-      });
-      let href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(txtstr);
-      let dname = this.threadNum + '.txt';
-      chrome.runtime.sendMessage({
-        message: 'downloadFile',
-        link: href,
-        name: dname
-      }, function (response) {
-        console.log({
-          response
-        });
-      });
-    }
   }
 
 }
@@ -2246,7 +2981,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "toType": () => (/* binding */ toType),
 /* harmony export */   "convertToValidFilename": () => (/* binding */ convertToValidFilename),
 /* harmony export */   "api": () => (/* binding */ api),
-/* harmony export */   "wait": () => (/* binding */ wait)
+/* harmony export */   "wait": () => (/* binding */ wait),
+/* harmony export */   "_removeAmpSymbols": () => (/* binding */ _removeAmpSymbols),
+/* harmony export */   "getExt": () => (/* binding */ getExt),
+/* harmony export */   "isEmpty": () => (/* binding */ isEmpty)
 /* harmony export */ });
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_0__);
@@ -2264,6 +3002,7 @@ const convertToValidFilename = string => {
   nname = nname.replace(/[\u0250-\ue007]/g, '');
   nname = nname.replace(/^\./, '');
   nname = nname.replace(/^ +/gm, '');
+  if (nname.length > 230) nname = nname.substring(0, 130);
   return nname;
 };
 const api = axios__WEBPACK_IMPORTED_MODULE_0___default().create({
@@ -2274,6 +3013,21 @@ const api = axios__WEBPACK_IMPORTED_MODULE_0___default().create({
 const wait = ms => {
   return new Promise(res => setTimeout(res, ms));
 };
+const _removeAmpSymbols = href => {
+  return href.replace(/amp;/gim, '');
+};
+const getExt = type => {
+  const arr = [{
+    type: 'image/jpg',
+    ext: 'jpg'
+  }, {
+    type: 'img/gif',
+    ext: 'gif'
+  }];
+  let obj = arr.find(o => o.type === type);
+  return obj.ext;
+};
+const isEmpty = str => !str.trim().length;
 
 /***/ }),
 
@@ -2297,7 +3051,7 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_cssWithMappingToString_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, " .ext-modal {\r\n  display: none; \r\n  position: fixed;  \r\n  z-index: 1000; \r\n  left: 0;\r\n  top: 0;\r\n  width: 100vw;  \r\n  height: 100vh;  \r\n  overflow: auto;\r\n  padding-top: 100px;\r\n  background-color: rgb(0,0,0);  \r\n  background-color: rgba(0,0,0,0.4);\r\n}\r\n\r\n/* Modal Content/Box */\r\n.ext-modal-content {\r\n  background-color: #fefefe;\r\n  margin: auto;\r\n  padding: 0;\r\n  border: 1px solid #888;\r\n  width: 29rem;  \r\n}\r\n\r\n/* The Close Button */\r\n.ext-close {\r\n  color: #aaa;\r\n  float: right;\r\n  font-size: 28px;\r\n  font-weight: bold;\r\n}\r\n\r\n.ext-close:hover,\r\n.ext-close:focus {\r\n  color: black;\r\n  text-decoration: none;\r\n  cursor: pointer;\r\n}\r\n\r\n.ext-modal-header {\r\n    color: #fff!important;\r\n    background-color: #f44336!important;\r\n    padding: 0.01em 16px;\r\n    position: relative;\r\n    margin: 0;\r\n}\r\n\r\n.ext-modal-header::before {\r\n    content: \"\";\r\n    display: table;\r\n    clear: both;\r\n}\r\n/* \r\n#folderName {\r\n    color: #3c3c3c;\r\n    font-family: Helvetica, Arial, sans-serif;\r\n    font-weight: 500;\r\n    font-size: 18px;\r\n    border-radius: 0;\r\n    line-height: 22px;\r\n    background-color: #fbfbfb;\r\n    padding: 13px 13px 13px 54px;\r\n    margin-bottom: 10px;\r\n    width: 100%;\r\n    -webkit-box-sizing: border-box;\r\n    -moz-box-sizing: border-box;\r\n    -ms-box-sizing: border-box;\r\n    box-sizing: border-box;\r\n    border: 1px solid grey;      \r\n    background-size: 30px 30px;\r\n    background-position: 11px 8px;\r\n    background-repeat: no-repeat;\r\n} */\r\n\r\n#pagerows {\r\n  padding: 10px;\r\n}\r\n#page-rows>div {\r\n    width: calc(100% - 3rem);\r\n    margin-top: .9rem;\r\n    margin-bottom: 1px;\r\n    margin-left: 1.5rem;\r\n    margin-right: 1.5rem;\r\n    position: relative;\r\n}\r\n\r\n.inp-row {\r\n        padding: 0;\r\n        will-change: auto;\r\n        flex-direction: column;\r\n        align-items: center;\r\n        width: 100%;\r\n        height: auto;\r\n        padding: 0;\r\n        transition: none;\r\n        overflow: visible;\r\n        border-top-left-radius: 4px;\r\n        border-top-right-radius: 4px;\r\n        border-bottom-right-radius: 0;\r\n        border-bottom-left-radius: 0;\r\n        display: inline-flex;\r\n          box-sizing: border-box;\r\n}\r\n#foldername {\r\n    padding: 0;\r\n    margin: .75rem 0 .75rem 1rem;\r\n    width: calc(100% - 1rem);\r\n    resize: none;\r\n    line-height: 1.3rem;\r\n    white-space: nowrap;\r\n    overflow-x: overlay;\r\n    overflow-y: scroll;\r\n    color: rgba(0,0,0,.87);\r\n    flex-grow: 1;\r\n    height: auto;\r\n    min-height: 1.5rem;\r\n    box-sizing: border-box;\r\n    display: flex;\r\n    border: 2px #333 solid;\r\n    border-radius: 4px !important;\r\n    background-color: transparent;\r\n    caret-color: #6200ee;\r\n    font-family: Roboto,sans-serif;\r\n    font-weight: 400;\r\n    font-size: 15px;\r\n    transition: opacity 150ms cubic-bezier(.4,0,.2,1);\r\n    appearance: none;\r\n    min-width: 0;    \r\n    border-radius: 0;\r\n    background: 0 0;\r\n    overflow:hidden;\r\n}\r\n\r\n.ext-btn {\r\n    border-radius: 3px; \r\n    border: 1px solid transparent;\r\n    border-radius: 0;  \r\n    border-width: 1px;\r\n    box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);\r\n    background-color: #f4f4f4;\r\n    color: #444;    \r\n    border: 1px solid transparent;\r\n    border-color: #ddd;\r\n    /* padding: 10px 16px; */\r\n    display: inline-block;\r\n    font-size: 15px;\r\n    line-height: 1.3333333;\r\n    touch-action: manipulation;\r\n    cursor: pointer;\r\n    background-image: none;\r\n    margin-bottom: 0;\r\n    font-weight: 400;\r\n    text-align: center;\r\n    white-space: nowrap;\r\n    vertical-align: middle;\r\n    height: 35px;\r\n    width: 80px;\r\n}   \r\n\r\n.ext-btn:focus {\r\n    outline: none;\r\n    color: #333;\r\n    background-color: #e6e6e6;\r\n    border-color: #8c8c8c;\r\n    text-decoration: none;\r\n    \r\n}\r\n.ext-btn:active {\r\n      background-color: #e7e7e7;\r\n      box-shadow: inset 0 3px 5px rgb(0 0 0 / 13%);\r\n      color: #333;     \r\n      background-image: none;\r\n      border-color: #adadad;\r\n      outline: 0;\r\n}\r\n\r\n .ext-btn:active:focus {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n }\r\n .ext-btn:active:focus, .ext-btn:focus {\r\n    outline: none;\r\n    outline-offset: -2px;\r\n }\r\n.ext-btn:active:hover {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n}\r\n.ext-radio {\r\n  margin: 0.5rem;\r\n}\r\n.ext-radio input[type=radio] {\r\n  position: absolute;\r\n  opacity: 0;\r\n}\r\n.ext-radio-label {\r\n  color : #333;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:before {\r\n  content: \"\";\r\n  background: #f4f4f4;\r\n  border-radius: 100%;\r\n  border: 1px solid #b4b4b4;\r\n  display: inline-block;\r\n  width: 1.4em;\r\n  height: 1.4em;\r\n  position: relative;\r\n  top: -0.2em;\r\n  margin-right: 1em;\r\n  vertical-align: top;\r\n  cursor: pointer;\r\n  text-align: center;\r\n  transition: all 250ms ease;\r\n}\r\n.ext-radio input[type=radio]:checked + .ext-radio-label:before {\r\n  background-color: #3197EE;\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n}\r\n.ext-radio input[type=radio]:focus + .ext-radio-label:before {\r\n  outline: none;\r\n  border-color: #3197EE;\r\n}\r\n.ext-radio input[type=radio]:disabled + .ext-radio-label:before {\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n  border-color: #b4b4b4;\r\n  background: #b4b4b4;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:empty:before {\r\n  margin-right: 0;\r\n}\r\n.download-button-sk {\r\n    border-radius: 2px;\r\n    padding: 8px;\r\n    display: -ms-flexbox;\r\n    display: flex;\r\n    -ms-flex-align: center;\r\n    align-items: center;\r\n    text-transform: capitalize;\r\n    height: 100%;\r\n}\r\n.download-button-sk > span {\r\n  pointer-events: none;\r\n}\r\n.download-button-sk:hover {\r\n      background-color: #d6d6d6;\r\n      outline: none;\r\n}", "",{"version":3,"sources":["webpack://./src/content.css"],"names":[],"mappings":"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","sourcesContent":[" .ext-modal {\r\n  display: none; \r\n  position: fixed;  \r\n  z-index: 1000; \r\n  left: 0;\r\n  top: 0;\r\n  width: 100vw;  \r\n  height: 100vh;  \r\n  overflow: auto;\r\n  padding-top: 100px;\r\n  background-color: rgb(0,0,0);  \r\n  background-color: rgba(0,0,0,0.4);\r\n}\r\n\r\n/* Modal Content/Box */\r\n.ext-modal-content {\r\n  background-color: #fefefe;\r\n  margin: auto;\r\n  padding: 0;\r\n  border: 1px solid #888;\r\n  width: 29rem;  \r\n}\r\n\r\n/* The Close Button */\r\n.ext-close {\r\n  color: #aaa;\r\n  float: right;\r\n  font-size: 28px;\r\n  font-weight: bold;\r\n}\r\n\r\n.ext-close:hover,\r\n.ext-close:focus {\r\n  color: black;\r\n  text-decoration: none;\r\n  cursor: pointer;\r\n}\r\n\r\n.ext-modal-header {\r\n    color: #fff!important;\r\n    background-color: #f44336!important;\r\n    padding: 0.01em 16px;\r\n    position: relative;\r\n    margin: 0;\r\n}\r\n\r\n.ext-modal-header::before {\r\n    content: \"\";\r\n    display: table;\r\n    clear: both;\r\n}\r\n/* \r\n#folderName {\r\n    color: #3c3c3c;\r\n    font-family: Helvetica, Arial, sans-serif;\r\n    font-weight: 500;\r\n    font-size: 18px;\r\n    border-radius: 0;\r\n    line-height: 22px;\r\n    background-color: #fbfbfb;\r\n    padding: 13px 13px 13px 54px;\r\n    margin-bottom: 10px;\r\n    width: 100%;\r\n    -webkit-box-sizing: border-box;\r\n    -moz-box-sizing: border-box;\r\n    -ms-box-sizing: border-box;\r\n    box-sizing: border-box;\r\n    border: 1px solid grey;      \r\n    background-size: 30px 30px;\r\n    background-position: 11px 8px;\r\n    background-repeat: no-repeat;\r\n} */\r\n\r\n#pagerows {\r\n  padding: 10px;\r\n}\r\n#page-rows>div {\r\n    width: calc(100% - 3rem);\r\n    margin-top: .9rem;\r\n    margin-bottom: 1px;\r\n    margin-left: 1.5rem;\r\n    margin-right: 1.5rem;\r\n    position: relative;\r\n}\r\n\r\n.inp-row {\r\n        padding: 0;\r\n        will-change: auto;\r\n        flex-direction: column;\r\n        align-items: center;\r\n        width: 100%;\r\n        height: auto;\r\n        padding: 0;\r\n        transition: none;\r\n        overflow: visible;\r\n        border-top-left-radius: 4px;\r\n        border-top-right-radius: 4px;\r\n        border-bottom-right-radius: 0;\r\n        border-bottom-left-radius: 0;\r\n        display: inline-flex;\r\n          box-sizing: border-box;\r\n}\r\n#foldername {\r\n    padding: 0;\r\n    margin: .75rem 0 .75rem 1rem;\r\n    width: calc(100% - 1rem);\r\n    resize: none;\r\n    line-height: 1.3rem;\r\n    white-space: nowrap;\r\n    overflow-x: overlay;\r\n    overflow-y: scroll;\r\n    color: rgba(0,0,0,.87);\r\n    flex-grow: 1;\r\n    height: auto;\r\n    min-height: 1.5rem;\r\n    box-sizing: border-box;\r\n    display: flex;\r\n    border: 2px #333 solid;\r\n    border-radius: 4px !important;\r\n    background-color: transparent;\r\n    caret-color: #6200ee;\r\n    font-family: Roboto,sans-serif;\r\n    font-weight: 400;\r\n    font-size: 15px;\r\n    transition: opacity 150ms cubic-bezier(.4,0,.2,1);\r\n    appearance: none;\r\n    min-width: 0;    \r\n    border-radius: 0;\r\n    background: 0 0;\r\n    overflow:hidden;\r\n}\r\n\r\n.ext-btn {\r\n    border-radius: 3px; \r\n    border: 1px solid transparent;\r\n    border-radius: 0;  \r\n    border-width: 1px;\r\n    box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);\r\n    background-color: #f4f4f4;\r\n    color: #444;    \r\n    border: 1px solid transparent;\r\n    border-color: #ddd;\r\n    /* padding: 10px 16px; */\r\n    display: inline-block;\r\n    font-size: 15px;\r\n    line-height: 1.3333333;\r\n    touch-action: manipulation;\r\n    cursor: pointer;\r\n    background-image: none;\r\n    margin-bottom: 0;\r\n    font-weight: 400;\r\n    text-align: center;\r\n    white-space: nowrap;\r\n    vertical-align: middle;\r\n    height: 35px;\r\n    width: 80px;\r\n}   \r\n\r\n.ext-btn:focus {\r\n    outline: none;\r\n    color: #333;\r\n    background-color: #e6e6e6;\r\n    border-color: #8c8c8c;\r\n    text-decoration: none;\r\n    \r\n}\r\n.ext-btn:active {\r\n      background-color: #e7e7e7;\r\n      box-shadow: inset 0 3px 5px rgb(0 0 0 / 13%);\r\n      color: #333;     \r\n      background-image: none;\r\n      border-color: #adadad;\r\n      outline: 0;\r\n}\r\n\r\n .ext-btn:active:focus {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n }\r\n .ext-btn:active:focus, .ext-btn:focus {\r\n    outline: none;\r\n    outline-offset: -2px;\r\n }\r\n.ext-btn:active:hover {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n}\r\n.ext-radio {\r\n  margin: 0.5rem;\r\n}\r\n.ext-radio input[type=radio] {\r\n  position: absolute;\r\n  opacity: 0;\r\n}\r\n.ext-radio-label {\r\n  color : #333;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:before {\r\n  content: \"\";\r\n  background: #f4f4f4;\r\n  border-radius: 100%;\r\n  border: 1px solid #b4b4b4;\r\n  display: inline-block;\r\n  width: 1.4em;\r\n  height: 1.4em;\r\n  position: relative;\r\n  top: -0.2em;\r\n  margin-right: 1em;\r\n  vertical-align: top;\r\n  cursor: pointer;\r\n  text-align: center;\r\n  transition: all 250ms ease;\r\n}\r\n.ext-radio input[type=radio]:checked + .ext-radio-label:before {\r\n  background-color: #3197EE;\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n}\r\n.ext-radio input[type=radio]:focus + .ext-radio-label:before {\r\n  outline: none;\r\n  border-color: #3197EE;\r\n}\r\n.ext-radio input[type=radio]:disabled + .ext-radio-label:before {\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n  border-color: #b4b4b4;\r\n  background: #b4b4b4;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:empty:before {\r\n  margin-right: 0;\r\n}\r\n.download-button-sk {\r\n    border-radius: 2px;\r\n    padding: 8px;\r\n    display: -ms-flexbox;\r\n    display: flex;\r\n    -ms-flex-align: center;\r\n    align-items: center;\r\n    text-transform: capitalize;\r\n    height: 100%;\r\n}\r\n.download-button-sk > span {\r\n  pointer-events: none;\r\n}\r\n.download-button-sk:hover {\r\n      background-color: #d6d6d6;\r\n      outline: none;\r\n}"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, " .ext-modal {\r\n  display: none; \r\n  position: fixed;  \r\n  z-index: 1000; \r\n  left: 0;\r\n  top: 0;\r\n  width: 100vw;  \r\n  height: 100vh;  \r\n  overflow: auto;\r\n  padding-top: 100px;\r\n  background-color: rgb(0,0,0);  \r\n  background-color: rgba(0,0,0,0.4);\r\n}\r\n\r\n/* Modal Content/Box */\r\n.ext-modal-content {\r\n  background-color: #fefefe;\r\n  margin: auto;\r\n  padding: 0;\r\n  border: 1px solid #888;\r\n  width: 29rem;  \r\n}\r\n\r\n/* The Close Button */\r\n.ext-close {\r\n  color: #aaa;\r\n  float: right;\r\n  font-size: 28px;\r\n  font-weight: bold;\r\n}\r\n\r\n.ext-close:hover,\r\n.ext-close:focus {\r\n  color: black;\r\n  text-decoration: none;\r\n  cursor: pointer;\r\n}\r\n\r\n.ext-modal-header {\r\n    color: #fff!important;\r\n    background-color: #f44336!important;\r\n    padding: 0.01em 16px;\r\n    position: relative;\r\n    margin: 0;\r\n}\r\n\r\n.ext-modal-header::before {\r\n    content: \"\";\r\n    display: table;\r\n    clear: both;\r\n}\r\n/* \r\n#folderName {\r\n    color: #3c3c3c;\r\n    font-family: Helvetica, Arial, sans-serif;\r\n    font-weight: 500;\r\n    font-size: 18px;\r\n    border-radius: 0;\r\n    line-height: 22px;\r\n    background-color: #fbfbfb;\r\n    padding: 13px 13px 13px 54px;\r\n    margin-bottom: 10px;\r\n    width: 100%;\r\n    -webkit-box-sizing: border-box;\r\n    -moz-box-sizing: border-box;\r\n    -ms-box-sizing: border-box;\r\n    box-sizing: border-box;\r\n    border: 1px solid grey;      \r\n    background-size: 30px 30px;\r\n    background-position: 11px 8px;\r\n    background-repeat: no-repeat;\r\n} */\r\n\r\n#pagerows {\r\n  padding: 10px;\r\n}\r\n#page-rows>div {\r\n    width: calc(100% - 3rem);\r\n    margin-top: .9rem;\r\n    margin-bottom: 1px;\r\n    margin-left: 1.5rem;\r\n    margin-right: 1.5rem;\r\n    position: relative;\r\n}\r\n\r\n.inp-row {\r\n        padding: 0;\r\n        will-change: auto;\r\n        flex-direction: column;\r\n        align-items: center;\r\n        width: 100%;\r\n        height: auto;\r\n        padding: 0;\r\n        transition: none;\r\n        overflow: visible;\r\n        border-top-left-radius: 4px;\r\n        border-top-right-radius: 4px;\r\n        border-bottom-right-radius: 0;\r\n        border-bottom-left-radius: 0;\r\n        display: inline-flex;\r\n          box-sizing: border-box;\r\n}\r\n#foldername {\r\n    padding: 0;\r\n    margin: .75rem 0 .75rem 1rem;\r\n    width: calc(100% - 1rem);\r\n    resize: none;\r\n    line-height: 1.3rem;\r\n    white-space: nowrap;\r\n    overflow-x: overlay;\r\n    overflow-y: scroll;\r\n    color: rgba(0,0,0,.87);\r\n    flex-grow: 1;\r\n    height: auto;\r\n    min-height: 1.5rem;\r\n    box-sizing: border-box;\r\n    display: flex;\r\n    border: 2px #333 solid;\r\n    border-radius: 4px !important;\r\n    background-color: transparent;\r\n    caret-color: #6200ee;\r\n    font-family: Roboto,sans-serif;\r\n    font-weight: 400;\r\n    font-size: 15px;\r\n    transition: opacity 150ms cubic-bezier(.4,0,.2,1);\r\n    appearance: none;\r\n    min-width: 0;    \r\n    border-radius: 0;\r\n    background: 0 0;\r\n    overflow:hidden;\r\n}\r\n\r\n.ext-btn {\r\n    border-radius: 3px; \r\n    border: 1px solid transparent;\r\n    border-radius: 0;  \r\n    border-width: 1px;\r\n    box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);\r\n    background-color: #f4f4f4;\r\n    color: #444;    \r\n    border: 1px solid transparent;\r\n    border-color: #ddd;\r\n    /* padding: 10px 16px; */\r\n    display: inline-block;\r\n    font-size: 15px;\r\n    line-height: 1.3333333;\r\n    touch-action: manipulation;\r\n    cursor: pointer;\r\n    background-image: none;\r\n    margin-bottom: 0;\r\n    font-weight: 400;\r\n    text-align: center;\r\n    white-space: nowrap;\r\n    vertical-align: middle;\r\n    height: 35px;\r\n    width: 80px;\r\n}   \r\n\r\n.ext-btn:focus {\r\n    outline: none;\r\n    color: #333;\r\n    background-color: #e6e6e6;\r\n    border-color: #8c8c8c;\r\n    text-decoration: none;\r\n    \r\n}\r\n.ext-btn:active {\r\n      background-color: #e7e7e7;\r\n      box-shadow: inset 0 3px 5px rgb(0 0 0 / 13%);\r\n      color: #333;     \r\n      background-image: none;\r\n      border-color: #adadad;\r\n      outline: 0;\r\n}\r\n\r\n .ext-btn:active:focus {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n }\r\n .ext-btn:active:focus, .ext-btn:focus {\r\n    outline: none;\r\n    outline-offset: -2px;\r\n }\r\n.ext-btn:active:hover {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n}\r\n.ext-radio {\r\n  margin: 0.5rem;\r\n}\r\n.ext-radio input[type=radio] {\r\n  position: absolute;\r\n  opacity: 0;\r\n}\r\n.ext-radio-label {\r\n  color : #333;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:before {\r\n  content: \"\";\r\n  background: #f4f4f4;\r\n  border-radius: 100%;\r\n  border: 1px solid #b4b4b4;\r\n  display: inline-block;\r\n  width: 1.4em;\r\n  height: 1.4em;\r\n  position: relative;\r\n  top: -0.2em;\r\n  margin-right: 1em;\r\n  vertical-align: top;\r\n  cursor: pointer;\r\n  text-align: center;\r\n  transition: all 250ms ease;\r\n}\r\n.ext-radio input[type=radio]:checked + .ext-radio-label:before {\r\n  background-color: #3197EE;\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n}\r\n.ext-radio input[type=radio]:focus + .ext-radio-label:before {\r\n  outline: none;\r\n  border-color: #3197EE;\r\n}\r\n.ext-radio input[type=radio]:disabled + .ext-radio-label:before {\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n  border-color: #b4b4b4;\r\n  background: #b4b4b4;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:empty:before {\r\n  margin-right: 0;\r\n}\r\n.download-button-sk {\r\n    border-radius: 2px;\r\n    padding: 8px;\r\n    display: -ms-flexbox;\r\n    display: flex;\r\n    -ms-flex-align: center;\r\n    align-items: center;\r\n    text-transform: capitalize;\r\n    height: 100%;\r\n}\r\n.download-button-sk > span {\r\n  pointer-events: none;\r\n}\r\n.download-button-sk:hover {\r\n      background-color: #d6d6d6;\r\n      outline: none;\r\n}\r\n.download_post {\r\n  margin: 2px;\r\n}\r\n\r\n.skButton {\r\n  background-color: #595959;\r\n  font-family: Arial, Helvetica, sans-serif;\r\n  border: none;\r\n  color: white;\r\n  padding: 10px;\r\n  text-align: center;\r\n  text-decoration: none;\r\n  display: inline-block;\r\n  font-size: 10px;\r\n  margin: 4px 2px;\r\n  cursor: pointer;\r\n  -webkit-transition-duration: 0.4s; /* Safari */\r\n  transition-duration: 0.4s;\r\n   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);}\r\n\r\n \r\n.skButton:hover {\r\n  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);\r\n}\r\n.skButton:active, .skButton:focus {\r\n\tbox-shadow: none;\r\n}", "",{"version":3,"sources":["webpack://./src/content.css"],"names":[],"mappings":"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","sourcesContent":[" .ext-modal {\r\n  display: none; \r\n  position: fixed;  \r\n  z-index: 1000; \r\n  left: 0;\r\n  top: 0;\r\n  width: 100vw;  \r\n  height: 100vh;  \r\n  overflow: auto;\r\n  padding-top: 100px;\r\n  background-color: rgb(0,0,0);  \r\n  background-color: rgba(0,0,0,0.4);\r\n}\r\n\r\n/* Modal Content/Box */\r\n.ext-modal-content {\r\n  background-color: #fefefe;\r\n  margin: auto;\r\n  padding: 0;\r\n  border: 1px solid #888;\r\n  width: 29rem;  \r\n}\r\n\r\n/* The Close Button */\r\n.ext-close {\r\n  color: #aaa;\r\n  float: right;\r\n  font-size: 28px;\r\n  font-weight: bold;\r\n}\r\n\r\n.ext-close:hover,\r\n.ext-close:focus {\r\n  color: black;\r\n  text-decoration: none;\r\n  cursor: pointer;\r\n}\r\n\r\n.ext-modal-header {\r\n    color: #fff!important;\r\n    background-color: #f44336!important;\r\n    padding: 0.01em 16px;\r\n    position: relative;\r\n    margin: 0;\r\n}\r\n\r\n.ext-modal-header::before {\r\n    content: \"\";\r\n    display: table;\r\n    clear: both;\r\n}\r\n/* \r\n#folderName {\r\n    color: #3c3c3c;\r\n    font-family: Helvetica, Arial, sans-serif;\r\n    font-weight: 500;\r\n    font-size: 18px;\r\n    border-radius: 0;\r\n    line-height: 22px;\r\n    background-color: #fbfbfb;\r\n    padding: 13px 13px 13px 54px;\r\n    margin-bottom: 10px;\r\n    width: 100%;\r\n    -webkit-box-sizing: border-box;\r\n    -moz-box-sizing: border-box;\r\n    -ms-box-sizing: border-box;\r\n    box-sizing: border-box;\r\n    border: 1px solid grey;      \r\n    background-size: 30px 30px;\r\n    background-position: 11px 8px;\r\n    background-repeat: no-repeat;\r\n} */\r\n\r\n#pagerows {\r\n  padding: 10px;\r\n}\r\n#page-rows>div {\r\n    width: calc(100% - 3rem);\r\n    margin-top: .9rem;\r\n    margin-bottom: 1px;\r\n    margin-left: 1.5rem;\r\n    margin-right: 1.5rem;\r\n    position: relative;\r\n}\r\n\r\n.inp-row {\r\n        padding: 0;\r\n        will-change: auto;\r\n        flex-direction: column;\r\n        align-items: center;\r\n        width: 100%;\r\n        height: auto;\r\n        padding: 0;\r\n        transition: none;\r\n        overflow: visible;\r\n        border-top-left-radius: 4px;\r\n        border-top-right-radius: 4px;\r\n        border-bottom-right-radius: 0;\r\n        border-bottom-left-radius: 0;\r\n        display: inline-flex;\r\n          box-sizing: border-box;\r\n}\r\n#foldername {\r\n    padding: 0;\r\n    margin: .75rem 0 .75rem 1rem;\r\n    width: calc(100% - 1rem);\r\n    resize: none;\r\n    line-height: 1.3rem;\r\n    white-space: nowrap;\r\n    overflow-x: overlay;\r\n    overflow-y: scroll;\r\n    color: rgba(0,0,0,.87);\r\n    flex-grow: 1;\r\n    height: auto;\r\n    min-height: 1.5rem;\r\n    box-sizing: border-box;\r\n    display: flex;\r\n    border: 2px #333 solid;\r\n    border-radius: 4px !important;\r\n    background-color: transparent;\r\n    caret-color: #6200ee;\r\n    font-family: Roboto,sans-serif;\r\n    font-weight: 400;\r\n    font-size: 15px;\r\n    transition: opacity 150ms cubic-bezier(.4,0,.2,1);\r\n    appearance: none;\r\n    min-width: 0;    \r\n    border-radius: 0;\r\n    background: 0 0;\r\n    overflow:hidden;\r\n}\r\n\r\n.ext-btn {\r\n    border-radius: 3px; \r\n    border: 1px solid transparent;\r\n    border-radius: 0;  \r\n    border-width: 1px;\r\n    box-shadow: inset 0 3px 5px rgba(0,0,0,0.125);\r\n    background-color: #f4f4f4;\r\n    color: #444;    \r\n    border: 1px solid transparent;\r\n    border-color: #ddd;\r\n    /* padding: 10px 16px; */\r\n    display: inline-block;\r\n    font-size: 15px;\r\n    line-height: 1.3333333;\r\n    touch-action: manipulation;\r\n    cursor: pointer;\r\n    background-image: none;\r\n    margin-bottom: 0;\r\n    font-weight: 400;\r\n    text-align: center;\r\n    white-space: nowrap;\r\n    vertical-align: middle;\r\n    height: 35px;\r\n    width: 80px;\r\n}   \r\n\r\n.ext-btn:focus {\r\n    outline: none;\r\n    color: #333;\r\n    background-color: #e6e6e6;\r\n    border-color: #8c8c8c;\r\n    text-decoration: none;\r\n    \r\n}\r\n.ext-btn:active {\r\n      background-color: #e7e7e7;\r\n      box-shadow: inset 0 3px 5px rgb(0 0 0 / 13%);\r\n      color: #333;     \r\n      background-image: none;\r\n      border-color: #adadad;\r\n      outline: 0;\r\n}\r\n\r\n .ext-btn:active:focus {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n }\r\n .ext-btn:active:focus, .ext-btn:focus {\r\n    outline: none;\r\n    outline-offset: -2px;\r\n }\r\n.ext-btn:active:hover {\r\n    color: #333;\r\n    background-color: #d4d4d4;\r\n    border-color: #8c8c8c;\r\n}\r\n.ext-radio {\r\n  margin: 0.5rem;\r\n}\r\n.ext-radio input[type=radio] {\r\n  position: absolute;\r\n  opacity: 0;\r\n}\r\n.ext-radio-label {\r\n  color : #333;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:before {\r\n  content: \"\";\r\n  background: #f4f4f4;\r\n  border-radius: 100%;\r\n  border: 1px solid #b4b4b4;\r\n  display: inline-block;\r\n  width: 1.4em;\r\n  height: 1.4em;\r\n  position: relative;\r\n  top: -0.2em;\r\n  margin-right: 1em;\r\n  vertical-align: top;\r\n  cursor: pointer;\r\n  text-align: center;\r\n  transition: all 250ms ease;\r\n}\r\n.ext-radio input[type=radio]:checked + .ext-radio-label:before {\r\n  background-color: #3197EE;\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n}\r\n.ext-radio input[type=radio]:focus + .ext-radio-label:before {\r\n  outline: none;\r\n  border-color: #3197EE;\r\n}\r\n.ext-radio input[type=radio]:disabled + .ext-radio-label:before {\r\n  box-shadow: inset 0 0 0 4px #f4f4f4;\r\n  border-color: #b4b4b4;\r\n  background: #b4b4b4;\r\n}\r\n.ext-radio input[type=radio] + .ext-radio-label:empty:before {\r\n  margin-right: 0;\r\n}\r\n.download-button-sk {\r\n    border-radius: 2px;\r\n    padding: 8px;\r\n    display: -ms-flexbox;\r\n    display: flex;\r\n    -ms-flex-align: center;\r\n    align-items: center;\r\n    text-transform: capitalize;\r\n    height: 100%;\r\n}\r\n.download-button-sk > span {\r\n  pointer-events: none;\r\n}\r\n.download-button-sk:hover {\r\n      background-color: #d6d6d6;\r\n      outline: none;\r\n}\r\n.download_post {\r\n  margin: 2px;\r\n}\r\n\r\n.skButton {\r\n  background-color: #595959;\r\n  font-family: Arial, Helvetica, sans-serif;\r\n  border: none;\r\n  color: white;\r\n  padding: 10px;\r\n  text-align: center;\r\n  text-decoration: none;\r\n  display: inline-block;\r\n  font-size: 10px;\r\n  margin: 4px 2px;\r\n  cursor: pointer;\r\n  -webkit-transition-duration: 0.4s; /* Safari */\r\n  transition-duration: 0.4s;\r\n   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);}\r\n\r\n \r\n.skButton:hover {\r\n  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);\r\n}\r\n.skButton:active, .skButton:focus {\r\n\tbox-shadow: none;\r\n}"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -13704,24 +14458,55 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _Reddit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Reddit */ "./src/content/Reddit.js");
 /* harmony import */ var _Waifuist__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Waifuist */ "./src/content/Waifuist.js");
+/* harmony import */ var _4chan__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./4chan */ "./src/content/4chan.js");
+/* harmony import */ var _Archived_Moe__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Archived.Moe */ "./src/content/Archived.Moe.js");
+/* harmony import */ var _ChanArchive__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./ChanArchive */ "./src/content/ChanArchive.js");
+/* harmony import */ var _4Archive__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./4Archive */ "./src/content/4Archive.js");
 
 
-let domain;
+
+
+
+
 class AppLauncher {
   constructor() {
     this.init();
+    this.domain;
   }
 
   init() {
     this.getDomain();
+    console.log(this.domain);
 
-    switch (domain) {
-      case "www.reddit.com":
-        this.initReddit();
+    switch (true) {
+      case this.domain == "v.redd.it":
+      case this.domain === "www.reddit.com":
+        new _Reddit__WEBPACK_IMPORTED_MODULE_0__.default();
         break;
 
-      case "waifuist.pro":
-        this.initWaifuist();
+      case this.domain == "waifuist.pro":
+        new _Waifuist__WEBPACK_IMPORTED_MODULE_1__.default(this.domain);
+        break;
+
+      case this.domain.includes("4chan.org") || this.domain.includes("4channel.org"):
+        {
+          new _4chan__WEBPACK_IMPORTED_MODULE_2__.default();
+        }
+        break;
+
+      case this.domain == "4archive.org":
+        {
+          new _4Archive__WEBPACK_IMPORTED_MODULE_5__.default();
+        }
+        break;
+
+      case this.domain == "archived.moe":
+      case this.domain == "archive.wakarimasen.moe":
+      case this.domain == "thebarchive.com":
+        {
+          new _ChanArchive__WEBPACK_IMPORTED_MODULE_4__.default(this.domain);
+        }
+        break;
 
       default:
         console.log("other");
@@ -13729,10 +14514,7 @@ class AppLauncher {
   }
 
   getDomain() {
-    domain = window.location.hostname;
-    console.log({
-      domain
-    });
+    this.domain = window.location.hostname;
   }
 
   initReddit() {
@@ -13741,6 +14523,14 @@ class AppLauncher {
 
   initWaifuist() {
     this.waifuist = new _Waifuist__WEBPACK_IMPORTED_MODULE_1__.default();
+  }
+
+  init4chan() {
+    this._4chan = new _4chan__WEBPACK_IMPORTED_MODULE_2__.default();
+  }
+
+  initArchivedMoe() {
+    this.archived = new _Archived_Moe__WEBPACK_IMPORTED_MODULE_3__.default();
   }
 
 }

@@ -246,3 +246,30 @@
       background-color: #d6d6d6;
       outline: none;
 }
+.download_post {
+  margin: 2px;
+}
+
+.skButton {
+  background-color: #595959;
+  font-family: Arial, Helvetica, sans-serif;
+  border: none;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 10px;
+  margin: 4px 2px;
+  cursor: pointer;
+  -webkit-transition-duration: 0.4s; /* Safari */
+  transition-duration: 0.4s;
+   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);}
+
+ 
+.skButton:hover {
+  box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
+}
+.skButton:active, .skButton:focus {
+	box-shadow: none;
+}
