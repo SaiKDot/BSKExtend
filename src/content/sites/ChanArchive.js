@@ -29,7 +29,7 @@ export default class ChanArchive extends ChanDownloader {
        .trim()
        .replace(/[^a-z0-9\s]/gi, '')
 
-    this.postTitle = h2t == '' || h2t == null || typeof h2t === undefined ? snt : h2t
+    this.postTitle = h2t == '' || h2t == null || typeof h2t === "undefined" ? snt : h2t
     
     const links = $(article).find('.post_file_filename')
 

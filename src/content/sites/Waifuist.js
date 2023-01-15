@@ -1,7 +1,7 @@
 import ChanDownloader from './Chan'
 import $ from 'jquery'
-import '../content.css'
-import { convertToValidFilename } from '../utils'
+import '../../content.css'
+import { convertToValidFilename } from '../../utils'
 
 export default class Waifuistw extends ChanDownloader {
   constructor(domain) {

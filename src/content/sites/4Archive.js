@@ -18,8 +18,9 @@ export default class _4Archive extends ChanDownloader {
       .replace(/[^a-z0-9\s]/gi, '')
       .replace(/\s*$/, '')
       .trim()
-    console.log(h2t)
+    console.log({h2t})
     let xf = $('.postMessage').first().text()
+    console.log({xf})
     let snt = xf
       .split(' ')
       .slice(0, 6)

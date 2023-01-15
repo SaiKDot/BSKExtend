@@ -1,7 +1,7 @@
-import {convertToValidFilename , isEmpty} from '../utils'
+import {convertToValidFilename} from '../../utils'
 import $ from 'jquery'
 export default class ChanDownlaoder {
-  constructor(array) {
+  constructor() {
     // this.array = array
     this.dirDwn =
       '<button class="skButton" id="dwnaria"> Download Aria</button> <button class="skButton" id="drDwn">Download Images</button> '
@@ -15,7 +15,7 @@ export default class ChanDownlaoder {
     // this.removeEvent() //remove the function
     // this.downloadAriaEvent()
   }
-  createAria2Array(dirOut) {
+  createAria2Array() {
     $.each(this.downloadArray, (i, val) => {     
       let title = convertToValidFilename(val.title)
       this.txtstr += `${val.link}\n\tout=${title} \n\tdir=${this.postTitle} - ${this.threadID}\n`

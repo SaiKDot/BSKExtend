@@ -1833,10 +1833,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./src/content/4Archive.js":
-/*!*********************************!*\
-  !*** ./src/content/4Archive.js ***!
-  \*********************************/
+/***/ "./src/content/sites/4Archive.js":
+/*!***************************************!*\
+  !*** ./src/content/sites/4Archive.js ***!
+  \***************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -1844,7 +1844,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ _4Archive)
 /* harmony export */ });
-/* harmony import */ var _Chan__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Chan */ "./src/content/Chan.js");
+/* harmony import */ var _Chan__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Chan */ "./src/content/sites/Chan.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_1__);
 
@@ -1865,8 +1865,13 @@ class _4Archive extends _Chan__WEBPACK_IMPORTED_MODULE_0__.default {
   getLinks() {
     let h2t = jquery__WEBPACK_IMPORTED_MODULE_1___default()('.postInfo').find('.subject').text();
     h2t = h2t.replace(/[^a-z0-9\s]/gi, '').replace(/\s*$/, '').trim();
-    console.log(h2t);
+    console.log({
+      h2t
+    });
     let xf = jquery__WEBPACK_IMPORTED_MODULE_1___default()('.postMessage').first().text();
+    console.log({
+      xf
+    });
     let snt = xf.split(' ').slice(0, 6).join(' ').trim().replace(/[^a-z0-9\s]/gi, '');
     snt = snt.replace(/\n/g, ' ');
     snt = snt.replace('br', ' ');
@@ -1916,10 +1921,10 @@ class _4Archive extends _Chan__WEBPACK_IMPORTED_MODULE_0__.default {
 
 /***/ }),
 
-/***/ "./src/content/4chan.js":
-/*!******************************!*\
-  !*** ./src/content/4chan.js ***!
-  \******************************/
+/***/ "./src/content/sites/4chan.js":
+/*!************************************!*\
+  !*** ./src/content/sites/4chan.js ***!
+  \************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -1929,7 +1934,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../utils */ "./src/utils/index.js");
 
 
 class _4chanManager {
@@ -1990,7 +1995,9 @@ class _4chanManager {
       }, response => {
         if (response.success) {
           console.log(response);
-        } else {}
+        } else {
+          console.log();
+        }
       });
     });
   }
@@ -2019,8 +2026,7 @@ class _4chanManager {
 
   createTextString() {
     jquery__WEBPACK_IMPORTED_MODULE_0___default().each(this.downloadArray, (i, val) => {
-      let title = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.convertToValidFilename)(val.title);
-      this.txtstr += `${val.link}\n\tout=${title} \n\tdir=${this.postTitle} - ${this.threadID}\n`;
+      this.txtstr += `${val.link}\n\tout=${val.title} \n\tdir=${this.postTitle} - ${this.threadID}\n`;
     });
   }
 
@@ -2044,7 +2050,9 @@ class _4chanManager {
     }, response => {
       if (response.success) {
         console.log(response);
-      } else {}
+      } else {
+        console.log();
+      }
     });
   }
 
@@ -2060,10 +2068,123 @@ class _4chanManager {
 
 /***/ }),
 
-/***/ "./src/content/Archived.Moe.js":
+/***/ "./src/content/sites/AnonIb.js":
 /*!*************************************!*\
-  !*** ./src/content/Archived.Moe.js ***!
+  !*** ./src/content/sites/AnonIb.js ***!
   \*************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ AnonIb)
+/* harmony export */ });
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../utils */ "./src/utils/index.js");
+
+
+class AnonIb {
+  constructor() {
+    this.addButton();
+    this.addListener();
+    this.postTitle = "anonib thread";
+    this.threadNum = "";
+    this.fileString = "";
+    this.downloadArray = [];
+  }
+
+  addButton() {
+    if (jquery__WEBPACK_IMPORTED_MODULE_0___default()(".aria2").length == 0) jquery__WEBPACK_IMPORTED_MODULE_0___default()('<button class="skButton aria2" type="button">aria2c</button>').appendTo(" .opHead");
+    if (jquery__WEBPACK_IMPORTED_MODULE_0___default()(".down-sync").length == 0) jquery__WEBPACK_IMPORTED_MODULE_0___default()('<button class="skButton down-sync" type="button">Download</button>').appendTo(" .opHead");
+  }
+
+  addListener() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).on("click", ".aria2", e => {
+      e.preventDefault();
+      this.createTextString();
+    });
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).on("click", ".down-sync", e => {
+      e.preventDefault();
+      this.downladAll();
+    });
+  }
+
+  parseThread() {
+    this.postTitle = jquery__WEBPACK_IMPORTED_MODULE_0___default()(".opHead").find(".labelSubject").text();
+
+    if (this.postTitle === "anonib thread" || this.postTitle === "" || this.postTitle === undefined) {
+      this.postTitle = jquery__WEBPACK_IMPORTED_MODULE_0___default()(".innerOP").find(".divMessage").text().slice(0, 29);
+    }
+
+    this.threadNum = jquery__WEBPACK_IMPORTED_MODULE_0___default()(".opCell").attr("id");
+
+    if (this.threadNum === "" || this.threadNum === undefined) {
+      this.threadNum = jquery__WEBPACK_IMPORTED_MODULE_0___default()("#threadIdentifier").val();
+    }
+
+    this.postTitle = `${this.postTitle} - anonib cel - ${this.threadNum}`;
+    const allposts = jquery__WEBPACK_IMPORTED_MODULE_0___default()("#threadList").find(".uploadCell");
+    jquery__WEBPACK_IMPORTED_MODULE_0___default().each(allposts, (i, val) => {
+      const originalNameLink = jquery__WEBPACK_IMPORTED_MODULE_0___default()(val).find(".originalNameLink");
+      const nameLink = jquery__WEBPACK_IMPORTED_MODULE_0___default()(val).find(".nameLink");
+      let fileName = originalNameLink.text();
+      if (fileName === "" || fileName == undefined) fileName = nameLink.text();
+      fileName = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.convertToValidFilename)(fileName);
+      let fileLink = originalNameLink.attr("href");
+      if (fileLink === "" || fileLink == undefined) fileLink = jquery__WEBPACK_IMPORTED_MODULE_0___default()(val).find(".nameLink").attr("href");
+
+      if (!fileLink.startsWith("http://") && !fileLink.startsWith("https://")) {
+        fileLink = "https://anonib.al" + fileLink;
+      }
+
+      this.downloadArray.push({
+        link: fileLink,
+        name: fileName
+      });
+    });
+  }
+
+  createTextString() {
+    let txtstr = "";
+    jquery__WEBPACK_IMPORTED_MODULE_0___default().each(this.downloadArray, (i, val) => {
+      txtstr += `${val.link}\n\tout=${val.name} \n\tdir=${this.postTitle}\n`;
+    });
+    chrome.runtime.sendMessage({
+      message: "getAria",
+      links: txtstr,
+      threadID: this.threadNum
+    }, response => {
+      if (response.success) {
+        console.log(response);
+      } else {
+        console.log(response, "Error");
+      }
+    });
+  }
+
+  async downladAll() {
+    const newArr = this.downloadArray.map(val => {
+      return {
+        filename: `anon-ib/${this.postTitle}/${val.name}`,
+        url: val.link
+      };
+    });
+    let message = await this.sendMessage({
+      message: "downloadBulk",
+      linksArray: newArr
+    });
+    message.success ? console.log(message) : console.error(message);
+  }
+
+}
+
+/***/ }),
+
+/***/ "./src/content/sites/Archived.Moe.js":
+/*!*******************************************!*\
+  !*** ./src/content/sites/Archived.Moe.js ***!
+  \*******************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -2178,10 +2299,10 @@ class ArchivedMoe {
 
 /***/ }),
 
-/***/ "./src/content/Chan.js":
-/*!*****************************!*\
-  !*** ./src/content/Chan.js ***!
-  \*****************************/
+/***/ "./src/content/sites/Chan.js":
+/*!***********************************!*\
+  !*** ./src/content/sites/Chan.js ***!
+  \***********************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -2189,13 +2310,13 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ ChanDownlaoder)
 /* harmony export */ });
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../utils */ "./src/utils/index.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_1__);
 
 
 class ChanDownlaoder {
-  constructor(array) {
+  constructor() {
     // this.array = array
     this.dirDwn = '<button class="skButton" id="dwnaria"> Download Aria</button> <button class="skButton" id="drDwn">Download Images</button> ';
     this.dirSpan = '<span class="skButton" id="dwnaria"> Download Aria</span> <span class="skButton" id="drDwn">Download Images</span> ';
@@ -2208,7 +2329,7 @@ class ChanDownlaoder {
     // this.downloadAriaEvent()
   }
 
-  createAria2Array(dirOut) {
+  createAria2Array() {
     jquery__WEBPACK_IMPORTED_MODULE_1___default().each(this.downloadArray, (i, val) => {
       let title = (0,_utils__WEBPACK_IMPORTED_MODULE_0__.convertToValidFilename)(val.title);
       this.txtstr += `${val.link}\n\tout=${title} \n\tdir=${this.postTitle} - ${this.threadID}\n`;
@@ -2279,10 +2400,10 @@ class ChanDownlaoder {
 
 /***/ }),
 
-/***/ "./src/content/ChanArchive.js":
-/*!************************************!*\
-  !*** ./src/content/ChanArchive.js ***!
-  \************************************/
+/***/ "./src/content/sites/ChanArchive.js":
+/*!******************************************!*\
+  !*** ./src/content/sites/ChanArchive.js ***!
+  \******************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -2290,7 +2411,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ ChanArchive)
 /* harmony export */ });
-/* harmony import */ var _Chan__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Chan */ "./src/content/Chan.js");
+/* harmony import */ var _Chan__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Chan */ "./src/content/sites/Chan.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_1__);
 
@@ -2317,7 +2438,7 @@ class ChanArchive extends _Chan__WEBPACK_IMPORTED_MODULE_0__.default {
     h2t = h2t.replace(/[^a-z0-9\s]/gi, '').replace(/\s*$/, '').trim();
     var xf = jquery__WEBPACK_IMPORTED_MODULE_1___default()('.text').first().text();
     var snt = xf.split(' ').slice(0, 6).join(' ').trim().replace(/[^a-z0-9\s]/gi, '');
-    this.postTitle = h2t == '' || h2t == null || typeof h2t === undefined ? snt : h2t;
+    this.postTitle = h2t == '' || h2t == null || typeof h2t === "undefined" ? snt : h2t;
     const links = jquery__WEBPACK_IMPORTED_MODULE_1___default()(article).find('.post_file_filename');
     links.each((i, o) => {
       let fi_con, link;
@@ -2386,10 +2507,85 @@ class ChanArchive extends _Chan__WEBPACK_IMPORTED_MODULE_0__.default {
 
 /***/ }),
 
-/***/ "./src/content/Reddit.js":
-/*!*******************************!*\
-  !*** ./src/content/Reddit.js ***!
-  \*******************************/
+/***/ "./src/content/sites/ImgSrcRu.js":
+/*!***************************************!*\
+  !*** ./src/content/sites/ImgSrcRu.js ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (/* binding */ ImgSrcRu)
+/* harmony export */ });
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
+/* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _Chan__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Chan */ "./src/content/sites/Chan.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../utils */ "./src/utils/index.js");
+
+
+
+class ImgSrcRu extends _Chan__WEBPACK_IMPORTED_MODULE_1__.default {
+  constructor() {
+    super();
+    this.addButton();
+    this.addListener();
+    this.title = "";
+    this.downloadArray = [];
+    this.getAllImages();
+  }
+
+  addButton() {
+    if (jquery__WEBPACK_IMPORTED_MODULE_0___default()(".download-sk").length === 0) jquery__WEBPACK_IMPORTED_MODULE_0___default()('<button class="download-sk" type="button">download</button>').appendTo(" .header-title");
+  }
+
+  addListener() {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).on("click", ".download-sk", e => {
+      e.preventDefault();
+      this.downloadImages();
+    });
+  }
+
+  getAllImages() {
+    this.title = jquery__WEBPACK_IMPORTED_MODULE_0___default()(".header").find("h1").text();
+    if (this.title === "") this.title = jquery__WEBPACK_IMPORTED_MODULE_0___default()(".header").find("tomato").text();
+    this.title = this.title + " - " + "imgSrcRu";
+    const pics = jquery__WEBPACK_IMPORTED_MODULE_0___default()("picture");
+    jquery__WEBPACK_IMPORTED_MODULE_0___default().each(pics, (i, val) => {
+      let imgLink = "";
+      imgLink = jquery__WEBPACK_IMPORTED_MODULE_0___default()(val).find("img.fts").attr("src");
+
+      if (imgLink === "") {
+        imgLink = jquery__WEBPACK_IMPORTED_MODULE_0___default()(val).find("source")[0].attr("srcset");
+      }
+
+      if (imgLink != "") imgLink = "https:" + imgLink;
+      const parentAcnch = jquery__WEBPACK_IMPORTED_MODULE_0___default()(val).closest("a");
+      let fileName = jquery__WEBPACK_IMPORTED_MODULE_0___default()(parentAcnch).next().text();
+      fileName = (0,_utils__WEBPACK_IMPORTED_MODULE_2__.convertToValidFilename)(fileName);
+      if (fileName !== "https:") this.downloadArray.push({
+        filename: `${this.title}/${fileName}`,
+        link: imgLink
+      });
+    });
+  }
+
+  async downloadImages() {
+    let message = await this.sendMessage({
+      message: "downloadBulk",
+      linksArray: this.downloadArray
+    });
+    message.success ? console.log(message) : console.error(message);
+  }
+
+}
+
+/***/ }),
+
+/***/ "./src/content/sites/Reddit.js":
+/*!*************************************!*\
+  !*** ./src/content/sites/Reddit.js ***!
+  \*************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -2401,7 +2597,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! axios */ "./node_modules/axios/index.js");
 /* harmony import */ var axios__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(axios__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../utils */ "./src/utils/index.js");
 
  // import {childrenMatches} from '../utils'
 
@@ -2914,10 +3110,10 @@ class RedGifsDownloader extends BaseDownloader {
 
 /***/ }),
 
-/***/ "./src/content/Twitter.js":
-/*!********************************!*\
-  !*** ./src/content/Twitter.js ***!
-  \********************************/
+/***/ "./src/content/sites/Twitter.js":
+/*!**************************************!*\
+  !*** ./src/content/sites/Twitter.js ***!
+  \**************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -2938,10 +3134,10 @@ const Twitter = () => {
 
 /***/ }),
 
-/***/ "./src/content/Waifuist.js":
-/*!*********************************!*\
-  !*** ./src/content/Waifuist.js ***!
-  \*********************************/
+/***/ "./src/content/sites/Waifuist.js":
+/*!***************************************!*\
+  !*** ./src/content/sites/Waifuist.js ***!
+  \***************************************/
 /***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
 
 "use strict";
@@ -2949,11 +3145,11 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ Waifuistw)
 /* harmony export */ });
-/* harmony import */ var _Chan__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Chan */ "./src/content/Chan.js");
+/* harmony import */ var _Chan__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Chan */ "./src/content/sites/Chan.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _content_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../content.css */ "./src/content.css");
-/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../utils */ "./src/utils/index.js");
+/* harmony import */ var _content_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../content.css */ "./src/content.css");
+/* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../../utils */ "./src/utils/index.js");
 
 
 
@@ -14558,13 +14754,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (/* binding */ AppLauncher)
 /* harmony export */ });
-/* harmony import */ var _Reddit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Reddit */ "./src/content/Reddit.js");
-/* harmony import */ var _Waifuist__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Waifuist */ "./src/content/Waifuist.js");
-/* harmony import */ var _4chan__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./4chan */ "./src/content/4chan.js");
-/* harmony import */ var _Archived_Moe__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Archived.Moe */ "./src/content/Archived.Moe.js");
-/* harmony import */ var _ChanArchive__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./ChanArchive */ "./src/content/ChanArchive.js");
-/* harmony import */ var _4Archive__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./4Archive */ "./src/content/4Archive.js");
-/* harmony import */ var _Twitter__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Twitter */ "./src/content/Twitter.js");
+/* harmony import */ var _sites_Reddit__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./sites/Reddit */ "./src/content/sites/Reddit.js");
+/* harmony import */ var _sites_Waifuist__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./sites/Waifuist */ "./src/content/sites/Waifuist.js");
+/* harmony import */ var _sites_4chan__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./sites/4chan */ "./src/content/sites/4chan.js");
+/* harmony import */ var _sites_Archived_Moe__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./sites/Archived.Moe */ "./src/content/sites/Archived.Moe.js");
+/* harmony import */ var _sites_ChanArchive__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./sites/ChanArchive */ "./src/content/sites/ChanArchive.js");
+/* harmony import */ var _sites_4Archive__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./sites/4Archive */ "./src/content/sites/4Archive.js");
+/* harmony import */ var _sites_Twitter__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./sites/Twitter */ "./src/content/sites/Twitter.js");
+/* harmony import */ var _sites_AnonIb__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./sites/AnonIb */ "./src/content/sites/AnonIb.js");
+/* harmony import */ var _sites_ImgSrcRu__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./sites/ImgSrcRu */ "./src/content/sites/ImgSrcRu.js");
+
+
 
 
 
@@ -14585,22 +14785,22 @@ class AppLauncher {
     switch (true) {
       case this.domain == "v.redd.it":
       case this.domain === "www.reddit.com":
-        new _Reddit__WEBPACK_IMPORTED_MODULE_0__.default();
+        new _sites_Reddit__WEBPACK_IMPORTED_MODULE_0__.default();
         break;
 
       case this.domain == "waifuist.pro":
-        new _Waifuist__WEBPACK_IMPORTED_MODULE_1__.default(this.domain);
+        new _sites_Waifuist__WEBPACK_IMPORTED_MODULE_1__.default(this.domain);
         break;
 
       case this.domain.includes("4chan.org") || this.domain.includes("4channel.org"):
         {
-          new _4chan__WEBPACK_IMPORTED_MODULE_2__.default();
+          new _sites_4chan__WEBPACK_IMPORTED_MODULE_2__.default();
         }
         break;
 
       case this.domain == "4archive.org":
         {
-          new _4Archive__WEBPACK_IMPORTED_MODULE_5__.default();
+          new _sites_4Archive__WEBPACK_IMPORTED_MODULE_5__.default();
         }
         break;
 
@@ -14608,12 +14808,21 @@ class AppLauncher {
       case this.domain == "archive.wakarimasen.moe":
       case this.domain == "thebarchive.com":
         {
-          new _ChanArchive__WEBPACK_IMPORTED_MODULE_4__.default(this.domain);
+          new _sites_ChanArchive__WEBPACK_IMPORTED_MODULE_4__.default(this.domain);
         }
         break;
 
       case this.domain === "twitter.com":
-        (0,_Twitter__WEBPACK_IMPORTED_MODULE_6__.default)();
+        (0,_sites_Twitter__WEBPACK_IMPORTED_MODULE_6__.default)();
+        break;
+
+      case this.domain === "imgsrc.ru":
+        new _sites_ImgSrcRu__WEBPACK_IMPORTED_MODULE_8__.default();
+        break;
+
+      case this.domain === "anonib.al":
+        new _sites_AnonIb__WEBPACK_IMPORTED_MODULE_7__.default();
+        break;
 
       default:
         console.log("other");
@@ -14625,22 +14834,23 @@ class AppLauncher {
   }
 
   initReddit() {
-    this.reddit = new _Reddit__WEBPACK_IMPORTED_MODULE_0__.default();
+    this.reddit = new _sites_Reddit__WEBPACK_IMPORTED_MODULE_0__.default();
   }
 
   initWaifuist() {
-    this.waifuist = new _Waifuist__WEBPACK_IMPORTED_MODULE_1__.default();
+    this.waifuist = new _sites_Waifuist__WEBPACK_IMPORTED_MODULE_1__.default();
   }
 
   init4chan() {
-    this._4chan = new _4chan__WEBPACK_IMPORTED_MODULE_2__.default();
+    this._4chan = new _sites_4chan__WEBPACK_IMPORTED_MODULE_2__.default();
   }
 
   initArchivedMoe() {
-    this.archived = new _Archived_Moe__WEBPACK_IMPORTED_MODULE_3__.default();
+    this.archived = new _sites_Archived_Moe__WEBPACK_IMPORTED_MODULE_3__.default();
   }
 
-}
+} // eslint-disable-next-line no-unused-vars
+
 let launcher = new AppLauncher();
 })();
 

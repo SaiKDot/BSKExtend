@@ -1,5 +1,5 @@
 import $ from 'jquery'
-import { convertToValidFilename } from '../utils'
+import { convertToValidFilename } from '../../utils'
 export default class _4chanManager {
   constructor() {
     this.removeHat();
@@ -74,6 +74,7 @@ export default class _4chanManager {
             if (response.success) {
               console.log(response);
             } else {
+              console.log();
             }
           }
         );
@@ -99,8 +100,7 @@ export default class _4chanManager {
   }
   createTextString() {
     $.each(this.downloadArray, (i, val) => {
-      let title = convertToValidFilename(val.title);
-      this.txtstr += `${val.link}\n\tout=${title} \n\tdir=${this.postTitle} - ${this.threadID}\n`;
+      this.txtstr += `${val.link}\n\tout=${val.title} \n\tdir=${this.postTitle} - ${this.threadID}\n`;
     });
   }
   getData(el) {
@@ -120,6 +120,7 @@ export default class _4chanManager {
         if (response.success) {
           console.log(response);
         } else {
+          console.log()
         }
       }
     );

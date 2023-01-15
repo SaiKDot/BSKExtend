@@ -6,7 +6,7 @@ import {
   wait,
   _removeAmpSymbols,
   getExt,
-} from '../utils'
+} from '../../utils'
  
  
 
