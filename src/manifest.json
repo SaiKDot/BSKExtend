@@ -12,12 +12,14 @@
     "activeTab",
     "tabs",
     "scripting",
-    "downloads",    
+    "downloads",
     "contextMenus",
     "storage",
-    "alarms"    
+    "alarms",
+    "nativeMessaging",
+    "scripting"
   ],
-  "host_permissions": ["*://*.gfycat.com/*","*://*.reddit.com/*"],
+  "host_permissions": ["*://*.gfycat.com/*", "*://*.reddit.com/*"],
   "action": {
     "default_popup": "index.html",
     "default_icons": {
@@ -33,7 +35,6 @@
     }
   ],
   "background": {
-    "service_worker": "background.js"     
+    "service_worker": "background.js"
   }
 }
- 

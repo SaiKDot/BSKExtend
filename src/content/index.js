@@ -4,7 +4,7 @@ import _4chanManager from './4chan'
 import ArchivedMoe from './Archived.Moe'
 import ChanArchive from './ChanArchive'
 import _4Archive from './4Archive'
-
+import Twitter from './Twitter'
 export default class AppLauncher {
   constructor() {
     this.init();
@@ -22,23 +22,21 @@ export default class AppLauncher {
 				new WaifuistManager(this.domain);
 				break;
 			case this.domain.includes("4chan.org") ||
-				this.domain.includes("4channel.org"):
-				{
+				this.domain.includes("4channel.org"): {
 					new _4chanManager();
 				}
 				break;
-			case this.domain == "4archive.org":
-				{
+			case this.domain == "4archive.org": {
 					new _4Archive();
 				}
 				break;
 			case this.domain == "archived.moe":
 			case this.domain == "archive.wakarimasen.moe":
-			case this.domain == "thebarchive.com":
-				{
+			case this.domain == "thebarchive.com":{
 					new ChanArchive(this.domain);
-				}
-				break;
+			}
+			break;
+			case this.domain === "twitter.com" : Twitter()
 			default:
 				console.log("other");
 		}

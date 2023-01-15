@@ -31,6 +31,7 @@
     "style-loader": "^2.0.0",
     "webpack": "^5.35.1",
     "webpack-cli": "^4.6.0",
-    "webpack-ext-reloader": "^1.1.9"
+    "webpack-ext-reloader": "^1.1.9",
+    "webpack-extension-reloader": "^1.1.4"
   }
 }

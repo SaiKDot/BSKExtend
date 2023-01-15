@@ -109,6 +109,30 @@ export default class EventTasks {
           sendResponse({ success: true, response: 'Aria File downloaded!' })
         }
         break
+        case "ariaDownload" : {
+          const {links, postTitle } = request
+          // console.log(request);
+        //  chrome.runtime.sendNativeMessage(
+        //    "mybat.application",
+        //    { text: "This is the text to write to the temporary file." },
+        //    function (response) {
+        //      console.log("Received response: " + response);
+        //    }
+        //  );
+
+        var port = chrome.runtime.connectNative("mybat.application");
+         port.postMessage({ txtStr: links, filename: "some message" });
+        port.onMessage.addListener(function (msg) {
+          console.log("Received" + msg);
+        });
+        port.onDisconnect.addListener(function (err) {
+          console.log("Disconnected" + chrome.runtime.lastError.message);
+        });
+
+         
+ 
+        }
+        break
         default:
           return true
       }
