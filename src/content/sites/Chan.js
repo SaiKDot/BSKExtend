@@ -19,7 +19,8 @@ export default class ChanDownlaoder {
     $.each(this.downloadArray, (i, val) => {     
       let title = convertToValidFilename(val.title)
       this.txtstr += `${val.link}\n\tout=${title} \n\tdir=${this.postTitle} - ${this.threadID}\n`
-    })    
+    })   
+    
   }
   appendLocationModal() {
     let modalDiv = `<div id="myfolderModal" class="ext-modal">
@@ -62,12 +63,10 @@ export default class ChanDownlaoder {
 
   async downloadAria() {   
      let message = await this.sendMessage({
-       message: 'getAria',
-       txtstr: this.txtstr,
-       threadID: this.threadID,
-       thrName: this.postTitle,
-       dirOut: this.dirOut,
-     })
+       message: "getAria",
+       links: this.txtstr,
+       threadID: this.threadID
+     });
      
     message.success ? console.log(message) : console.error(message)
   }

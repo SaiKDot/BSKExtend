@@ -2375,11 +2375,9 @@ class ChanDownlaoder {
 
   async downloadAria() {
     let message = await this.sendMessage({
-      message: 'getAria',
-      txtstr: this.txtstr,
-      threadID: this.threadID,
-      thrName: this.postTitle,
-      dirOut: this.dirOut
+      message: "getAria",
+      links: this.txtstr,
+      threadID: this.threadID
     });
     message.success ? console.log(message) : console.error(message);
   }
@@ -2420,15 +2418,24 @@ class ChanArchive extends _Chan__WEBPACK_IMPORTED_MODULE_0__.default {
   constructor(domain) {
     super();
     this.appendButton();
+    this.addEvents();
     this.domain = domain;
-    this.getLinks(); // this.revealModalEvent() //remove the function
-
-    this.downloadFiles();
-    this.downloadAriaEvent();
+    this.getLinks();
+    this.postTitle; // this.revealModalEvent() //remove the function
+    // this.downloadFiles()
   }
 
   appendButton() {
     jquery__WEBPACK_IMPORTED_MODULE_1___default()('header > .post_data').first().append(this.dirDwn);
+  }
+
+  addEvents() {
+    jquery__WEBPACK_IMPORTED_MODULE_1___default()(document).on("click", "#dwnaria", () => {
+      let dirOut = `${this.postTitle} - ${this.threadID}`;
+      console.log(dirOut);
+      this.createAria2Array(dirOut);
+      this.downloadAria();
+    });
   }
 
   getLinks() {
@@ -2459,10 +2466,10 @@ class ChanArchive extends _Chan__WEBPACK_IMPORTED_MODULE_0__.default {
       let fname = o.title;
       let title;
 
-      if (fname == null || fname == '' || typeof fname == undefined) {
-        title = lname.substring(lname.lastIndexOf('/') + 1); //console.log('nofilename', o.href, filename)
+      if (fname == null || fname == '' || typeof fname == "undefined") {
+        title = lname.substring(lname.lastIndexOf('/') + 1);
       } else {
-        title = fname; //console.log('hasfilename', filename)
+        title = fname;
       }
 
       this.downloadArray.push({
@@ -2495,12 +2502,7 @@ class ChanArchive extends _Chan__WEBPACK_IMPORTED_MODULE_0__.default {
   }
 
   downloadAriaEvent() {
-    jquery__WEBPACK_IMPORTED_MODULE_1___default()('#dwnaria').on('click', () => {
-      let dirOut = `${this.postTitle} - ${this.threadID}`;
-      console.log(dirOut);
-      this.createAria2Array(dirOut);
-      this.downloadAria();
-    });
+    console.log(this.downloadArray);
   }
 
 }

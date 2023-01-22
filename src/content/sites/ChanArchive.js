@@ -3,15 +3,25 @@ import $ from 'jquery'
 export default class ChanArchive extends ChanDownloader {
   constructor(domain) {
     super()
-    this.appendButton()
+    this.appendButton(); 
+    this.addEvents();
     this.domain = domain
     this.getLinks()
+    this.postTitle;
     // this.revealModalEvent() //remove the function
-    this.downloadFiles()
-    this.downloadAriaEvent()
+    // this.downloadFiles()
+ 
   }
   appendButton() {
     $('header > .post_data').first().append(this.dirDwn)
+  }
+  addEvents() {
+    $(document).on("click", "#dwnaria",() => {
+      let dirOut = `${this.postTitle} - ${this.threadID}`;
+      console.log(dirOut);
+      this.createAria2Array(dirOut);
+      this.downloadAria();
+    });
   }
   getLinks() {
     const article = $('article.thread:first')[0]
@@ -51,15 +61,16 @@ export default class ChanArchive extends ChanDownloader {
       let lname = o.text
       let fname = o.title
       let title
-      if (fname == null || fname == '' || typeof fname == undefined) {
+      if (fname == null || fname == '' || typeof fname == "undefined") {
         title = lname.substring(lname.lastIndexOf('/') + 1)
-        //console.log('nofilename', o.href, filename)
+        
       } else {
         title = fname
-        //console.log('hasfilename', filename)
+        
       }
       this.downloadArray.push({ title, link })
     })
+     
   }
   
    
@@ -88,11 +99,7 @@ export default class ChanArchive extends ChanDownloader {
   }
 
   downloadAriaEvent() {
-    $('#dwnaria').on('click', () => {
-      let dirOut = `${this.postTitle} - ${this.threadID}`  
-      console.log(dirOut)     
-      this.createAria2Array(dirOut)
-      this.downloadAria()
-    })
+    console.log(this.downloadArray);
+
   }
 }
