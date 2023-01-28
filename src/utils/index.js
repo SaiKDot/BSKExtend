@@ -12,7 +12,7 @@ export const toType = (obj) => {
 }
 
 export const convertToValidFilename = (string) => {
-  let nname = string.replace(/[\/|\\:$#'*?△☆"~<>]/g, ' ')
+  let nname = string.replace(/[/|\\:$#'*?△☆"~<>]/g, ' ')
   nname = nname.replace(/[\u0250-\ue007]/g, '')
   nname = nname.replace(/^\./, '')
   nname = nname.replace(/^ +/gm, '')

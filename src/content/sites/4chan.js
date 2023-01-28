@@ -1,14 +1,22 @@
-import $ from 'jquery'
-import { convertToValidFilename } from '../../utils'
-export default class _4chanManager {
+import $ from "jquery";
+import { convertToValidFilename } from "../../utils";
+import ChanDownlaoder  from "./Chan";
+export default class _4chanManager extends ChanDownlaoder {
   constructor() {
-    this.removeHat();
+    super()
+    // this.removeHat();
+    // this.removeIframe();    
+    this.title = "";
+    this.threadNum = "";
     this.addButton();
     this.addListener();
-    this.removeIframe();
-    this.downloadArray = [];
-    this.postTitle;
-    this.txtstr = "";
+    $(".thread").on("DOMNodeInserted", (event) => {
+      if ($(event.target).attr("class") === "postMessage") 
+        this.addButton();
+        this.getAllFiles();
+    });
+
+    this.parseThread();
   }
   removeHat() {
     $(".party-hat").each((o, e) => {
@@ -16,71 +24,68 @@ export default class _4chanManager {
     });
     $("#js-snowfield").remove();
   }
-  removeIframe(){
-    $('iframe').remove();
+  removeIframe() {
+    $("iframe").remove();
+  }
+  parseThread() {
+    let titleText = $(".opContainer").find(".post .postInfo .subject").text();
+    if (titleText === "")
+      titleText = $(".opContainer")
+        .find(" .post .postMessage")
+        .text()
+        .slice(0, 50);
+    if (titleText === "") titleText = "4chan";
+    this.threadNum = $("[name='resto']").val();
+    this.postTitle = titleText + " - " + this.threadNum;
+    this.getAllFiles();
   }
   addButton() {
-    // console.log($(".postContainer").find(".fileText")[0]);
     const fileText = $(".postContainer").find(".fileText");
     fileText.find(".d2").remove();
-    console.log(fileText);
+
     fileText[0].innerHTML +=
-      '<button class="skButton d2" type="button">aria2c</button>';
+      '<button class="skButton d2" id="getAria" type="button">aria2c</button> <button class="skButton d2" id="downloadAll" type="button">Download All</button>';
 
     fileText.find(".d1").remove();
-   
-    fileText.append(
-      '<button class="skButton d1" type="button">download</button>'
+
+    $(".postContainer .fileText:not(:first)").append(
+      '<button class="skButton d1" id="downloadPost" type="button">Download</button>'
     );
   }
   addListener() {
-    var self = this;
-
-    $(".thread").on("DOMNodeInserted", (event) => {
-      if ($(event.target).attr("class") === "postMessage") self.addButton();
-    });
-
     $(document)
       .off()
-      .on("click", ".d1", (e) => {
+      .on("click", "#downloadPost", (e) => {
         e.preventDefault();
         const file = $(e.target).closest(".file")[0];
         this.getData(file);
       });
-
     $(document)
       .off()
-      .on("click", ".d2", (e) => {
+      .on("click", "#downloadAll", (e) => {
         e.preventDefault();
-        this.getAllFiles();
-        this.postTitle = $(e.target)
-          .closest(".post")
-          .find(".postInfo .subject")
-          .text();
-        if (this.postTitle === undefined || this.postTitle === "") {
-          this.postTitle = $(e.target)
-            .closest(".post")
-            .find(".postMessage")
-            .text()
-            .slice(0, 29);
-        }
-        this.createTextString();
-        chrome.runtime.sendMessage(
-          {
-            message: "ariaDownload",
-            links: this.txtstr
-          },
-          (response) => {
-            if (response.success) {
-              console.log(response);
-            } else {
-              console.log();
-            }
-          }
-        );
+        this.downladAll();
       });
+
+    $(document).on("click", "#getAria", async (e) => {
+      e.preventDefault();      
+      let txtstr = "";
+      for (let i = 0; i < this.downloadArray.length; i++) {
+        let val = this.downloadArray[i];
+        txtstr += `${val.link}\n\tout=${val.name} \n\tdir=${this.postTitle}\n`;
+      } 
+
+     let message = await this.sendMessage({
+       message: "getAria",
+       links: txtstr,
+       threadID: this.threadNum
+     });
+      message.success ? console.log(message) : console.error(message);     
+    
+    });
   }
   getAllFiles() {
+    this.downloadArray = [];
     const postList = $(".thread .postContainer");
     let ext;
     postList.each((o, el) => {
@@ -88,22 +93,23 @@ export default class _4chanManager {
       let link = fileAnchor.attr("href");
 
       if (link === undefined) return;
+
+      link = "https:" + link;
       ext = link.split(".").pop();
 
-      let filename = fileAnchor.attr("title");
-      if (filename === undefined || filename === "") {
-        filename = fileAnchor.text();
+      let fileName = fileAnchor.attr("title");
+    
+      if (fileName === undefined || fileName === "") {
+        fileName = fileAnchor.text();
       }
-      let name = convertToValidFilename(filename) + "." + ext;
-      this.downloadArray.push({ link: link, title: name });
+      fileName = fileName.split(".").shift();  
+      let name = convertToValidFilename(fileName) + "." + ext;
+      
+      this.downloadArray.push({ link: link, name: name });
     });
   }
-  createTextString() {
-    $.each(this.downloadArray, (i, val) => {
-      this.txtstr += `${val.link}\n\tout=${val.title} \n\tdir=${this.postTitle} - ${this.threadID}\n`;
-    });
-  }
-  getData(el) {
+ 
+  async getData(el) {
     // console.log(el);
     let link = $(el).find(".fileText").find("a").attr("href");
     link = "https:" + link;
@@ -114,26 +120,42 @@ export default class _4chanManager {
     let ext = link.split(".").pop();
     let name = convertToValidFilename(text) + "." + ext;
     name = name.replace(/\.[^/.]+$/, "");
-    chrome.runtime.sendMessage(
-      { message: "downloadFile", link: link, name: name },
-      (response) => {
-        if (response.success) {
-          console.log(response);
-        } else {
-          console.log()
-        }
-      }
-    );
+    
+    let message = await this.sendMessage({
+       message: "downloadFile",
+       link: link,
+       name: name
+     });
+    message.success ? console.log(message) : console.error(message);
   }
 
-  formLink(part1, part2) {
-    part2 = part2.substring(0, part2.indexOf("."));
-    part2 = part2 + "." + this.ext;
-    part1 = part1.replace(
-      "https://archived.moe/files/",
-      this.domains[this.board]
-    );
-    let l = part1 + "/image/" + part2;
-    return l;
+  async downladAll() {
+    const newArr = this.downloadArray.map((val) => {
+      return {
+        filename: `4chan-download/${this.postTitle}/${val.name}`,
+        link: val.link
+      };
+    });
+ 
+    let message = await this.sendMessage({
+      message: "downloadBulk",
+      linksArray: newArr
+    });
+
+    message.success ? console.log(message) : console.error(message);
   }
+  
+  // Could be useful
+
+  //   new MutationObserver((ms) =>
+  //   ms.forEach((m) =>
+  //     m.addedNodes.forEach((node) => {
+  //       let article =
+  //         (node.tagName == "ARTICLE" && node) ||
+  //         (node.tagName == "DIV" &&
+  //           (node.querySelector("article") || node.closest("article")));
+  //       if (article && !article.dataset.injected) TMD.inject(article);
+  //     })
+  //   )
+  // ).observe(document.body, { childList: true, subtree: true });
 }

@@ -1935,17 +1935,24 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! jquery */ "./node_modules/jquery/dist/jquery.js");
 /* harmony import */ var jquery__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(jquery__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../utils */ "./src/utils/index.js");
+/* harmony import */ var _Chan__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Chan */ "./src/content/sites/Chan.js");
 
 
-class _4chanManager {
+
+class _4chanManager extends _Chan__WEBPACK_IMPORTED_MODULE_2__.default {
   constructor() {
-    this.removeHat();
+    super(); // this.removeHat();
+    // this.removeIframe();    
+
+    this.title = "";
+    this.threadNum = "";
     this.addButton();
     this.addListener();
-    this.removeIframe();
-    this.downloadArray = [];
-    this.postTitle;
-    this.txtstr = "";
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".thread").on("DOMNodeInserted", event => {
+      if (jquery__WEBPACK_IMPORTED_MODULE_0___default()(event.target).attr("class") === "postMessage") this.addButton();
+      this.getAllFiles();
+    });
+    this.parseThread();
   }
 
   removeHat() {
@@ -1956,81 +1963,80 @@ class _4chanManager {
   }
 
   removeIframe() {
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()('iframe').remove();
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()("iframe").remove();
+  }
+
+  parseThread() {
+    let titleText = jquery__WEBPACK_IMPORTED_MODULE_0___default()(".opContainer").find(".post .postInfo .subject").text();
+    if (titleText === "") titleText = jquery__WEBPACK_IMPORTED_MODULE_0___default()(".opContainer").find(" .post .postMessage").text().slice(0, 50);
+    if (titleText === "") titleText = "4chan";
+    this.threadNum = jquery__WEBPACK_IMPORTED_MODULE_0___default()("[name='resto']").val();
+    this.postTitle = titleText + " - " + this.threadNum;
+    this.getAllFiles();
   }
 
   addButton() {
-    // console.log($(".postContainer").find(".fileText")[0]);
     const fileText = jquery__WEBPACK_IMPORTED_MODULE_0___default()(".postContainer").find(".fileText");
     fileText.find(".d2").remove();
-    console.log(fileText);
-    fileText[0].innerHTML += '<button class="skButton d2" type="button">aria2c</button>';
+    fileText[0].innerHTML += '<button class="skButton d2" id="getAria" type="button">aria2c</button> <button class="skButton d2" id="downloadAll" type="button">Download All</button>';
     fileText.find(".d1").remove();
-    fileText.append('<button class="skButton d1" type="button">download</button>');
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".postContainer .fileText:not(:first)").append('<button class="skButton d1" id="downloadPost" type="button">Download</button>');
   }
 
   addListener() {
-    var self = this;
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(".thread").on("DOMNodeInserted", event => {
-      if (jquery__WEBPACK_IMPORTED_MODULE_0___default()(event.target).attr("class") === "postMessage") self.addButton();
-    });
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).off().on("click", ".d1", e => {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).off().on("click", "#downloadPost", e => {
       e.preventDefault();
       const file = jquery__WEBPACK_IMPORTED_MODULE_0___default()(e.target).closest(".file")[0];
       this.getData(file);
     });
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).off().on("click", ".d2", e => {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).off().on("click", "#downloadAll", e => {
       e.preventDefault();
-      this.getAllFiles();
-      this.postTitle = jquery__WEBPACK_IMPORTED_MODULE_0___default()(e.target).closest(".post").find(".postInfo .subject").text();
+      this.downladAll();
+    });
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).on("click", "#getAria", async e => {
+      e.preventDefault();
+      let txtstr = "";
 
-      if (this.postTitle === undefined || this.postTitle === "") {
-        this.postTitle = jquery__WEBPACK_IMPORTED_MODULE_0___default()(e.target).closest(".post").find(".postMessage").text().slice(0, 29);
+      for (let i = 0; i < this.downloadArray.length; i++) {
+        let val = this.downloadArray[i];
+        txtstr += `${val.link}\n\tout=${val.name} \n\tdir=${this.postTitle}\n`;
       }
 
-      this.createTextString();
-      chrome.runtime.sendMessage({
-        message: "ariaDownload",
-        links: this.txtstr
-      }, response => {
-        if (response.success) {
-          console.log(response);
-        } else {
-          console.log();
-        }
+      let message = await this.sendMessage({
+        message: "getAria",
+        links: txtstr,
+        threadID: this.threadNum
       });
+      message.success ? console.log(message) : console.error(message);
     });
   }
 
   getAllFiles() {
+    this.downloadArray = [];
     const postList = jquery__WEBPACK_IMPORTED_MODULE_0___default()(".thread .postContainer");
     let ext;
     postList.each((o, el) => {
       const fileAnchor = jquery__WEBPACK_IMPORTED_MODULE_0___default()(el).find(".file .fileText").find("a");
       let link = fileAnchor.attr("href");
       if (link === undefined) return;
+      link = "https:" + link;
       ext = link.split(".").pop();
-      let filename = fileAnchor.attr("title");
+      let fileName = fileAnchor.attr("title");
 
-      if (filename === undefined || filename === "") {
-        filename = fileAnchor.text();
+      if (fileName === undefined || fileName === "") {
+        fileName = fileAnchor.text();
       }
 
-      let name = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.convertToValidFilename)(filename) + "." + ext;
+      fileName = fileName.split(".").shift();
+      let name = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.convertToValidFilename)(fileName) + "." + ext;
       this.downloadArray.push({
         link: link,
-        title: name
+        name: name
       });
     });
   }
 
-  createTextString() {
-    jquery__WEBPACK_IMPORTED_MODULE_0___default().each(this.downloadArray, (i, val) => {
-      this.txtstr += `${val.link}\n\tout=${val.title} \n\tdir=${this.postTitle} - ${this.threadID}\n`;
-    });
-  }
-
-  getData(el) {
+  async getData(el) {
     // console.log(el);
     let link = jquery__WEBPACK_IMPORTED_MODULE_0___default()(el).find(".fileText").find("a").attr("href");
     link = "https:" + link;
@@ -2043,26 +2049,39 @@ class _4chanManager {
     let ext = link.split(".").pop();
     let name = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.convertToValidFilename)(text) + "." + ext;
     name = name.replace(/\.[^/.]+$/, "");
-    chrome.runtime.sendMessage({
+    let message = await this.sendMessage({
       message: "downloadFile",
       link: link,
       name: name
-    }, response => {
-      if (response.success) {
-        console.log(response);
-      } else {
-        console.log();
-      }
     });
+    message.success ? console.log(message) : console.error(message);
   }
 
-  formLink(part1, part2) {
-    part2 = part2.substring(0, part2.indexOf("."));
-    part2 = part2 + "." + this.ext;
-    part1 = part1.replace("https://archived.moe/files/", this.domains[this.board]);
-    let l = part1 + "/image/" + part2;
-    return l;
-  }
+  async downladAll() {
+    const newArr = this.downloadArray.map(val => {
+      return {
+        filename: `4chan-download/${this.postTitle}/${val.name}`,
+        link: val.link
+      };
+    });
+    let message = await this.sendMessage({
+      message: "downloadBulk",
+      linksArray: newArr
+    });
+    message.success ? console.log(message) : console.error(message);
+  } // Could be useful
+  //   new MutationObserver((ms) =>
+  //   ms.forEach((m) =>
+  //     m.addedNodes.forEach((node) => {
+  //       let article =
+  //         (node.tagName == "ARTICLE" && node) ||
+  //         (node.tagName == "DIV" &&
+  //           (node.querySelector("article") || node.closest("article")));
+  //       if (article && !article.dataset.injected) TMD.inject(article);
+  //     })
+  //   )
+  // ).observe(document.body, { childList: true, subtree: true });
+
 
 }
 
@@ -2086,12 +2105,25 @@ __webpack_require__.r(__webpack_exports__);
 
 class AnonIb {
   constructor() {
-    this.addButton();
-    this.addListener();
+    this.downloadArray = [];
     this.postTitle = "anonib thread";
     this.threadNum = "";
     this.fileString = "";
-    this.downloadArray = [];
+    this.addButton();
+    this.addListener();
+    this.parseThread();
+  }
+
+  sendMessage(request) {
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(request, response => {
+        if (response.success) {
+          resolve(response);
+        } else {
+          reject(response);
+        }
+      });
+    });
   }
 
   addButton() {
@@ -2123,7 +2155,7 @@ class AnonIb {
       this.threadNum = jquery__WEBPACK_IMPORTED_MODULE_0___default()("#threadIdentifier").val();
     }
 
-    this.postTitle = `${this.postTitle} - anonib cel - ${this.threadNum}`;
+    this.postTitle = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.convertToValidFilename)(`${this.postTitle} - anonib cel - ${this.threadNum}`);
     const allposts = jquery__WEBPACK_IMPORTED_MODULE_0___default()("#threadList").find(".uploadCell");
     jquery__WEBPACK_IMPORTED_MODULE_0___default().each(allposts, (i, val) => {
       const originalNameLink = jquery__WEBPACK_IMPORTED_MODULE_0___default()(val).find(".originalNameLink");
@@ -2145,31 +2177,28 @@ class AnonIb {
     });
   }
 
-  createTextString() {
+  async createTextString() {
     let txtstr = "";
     jquery__WEBPACK_IMPORTED_MODULE_0___default().each(this.downloadArray, (i, val) => {
       txtstr += `${val.link}\n\tout=${val.name} \n\tdir=${this.postTitle}\n`;
     });
-    chrome.runtime.sendMessage({
+    let message = await this.sendMessage({
       message: "getAria",
       links: txtstr,
       threadID: this.threadNum
-    }, response => {
-      if (response.success) {
-        console.log(response);
-      } else {
-        console.log(response, "Error");
-      }
     });
+    message.success ? console.log(message) : console.error(message);
   }
 
   async downladAll() {
+    // console.log(this.downloadArray)
     const newArr = this.downloadArray.map(val => {
       return {
         filename: `anon-ib/${this.postTitle}/${val.name}`,
-        url: val.link
+        link: val.link
       };
-    });
+    }); // console.log(newArr)
+
     let message = await this.sendMessage({
       message: "downloadBulk",
       linksArray: newArr
@@ -2323,8 +2352,7 @@ class ChanDownlaoder {
     this.postTitle;
     this.threadID;
     this.downloadArray = [];
-    this.dirOut;
-    this.txtstr = ''; // this.appendLocationModal() //remove the function
+    this.dirOut; // this.appendLocationModal() //remove the function
     // this.removeEvent() //remove the function
     // this.downloadAriaEvent()
   }
@@ -3298,7 +3326,7 @@ const toType = obj => {
   return {}.toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
 };
 const convertToValidFilename = string => {
-  let nname = string.replace(/[\/|\\:$#'*?△☆"~<>]/g, ' ');
+  let nname = string.replace(/[/|\\:$#'*?△☆"~<>]/g, ' ');
   nname = nname.replace(/[\u0250-\ue007]/g, '');
   nname = nname.replace(/^\./, '');
   nname = nname.replace(/^ +/gm, '');

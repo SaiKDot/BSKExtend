@@ -9,8 +9,7 @@ export default class ChanDownlaoder {
     this.postTitle
     this.threadID 
     this.downloadArray = []
-    this.dirOut
-    this.txtstr = ''
+    this.dirOut    
     // this.appendLocationModal() //remove the function
     // this.removeEvent() //remove the function
     // this.downloadAriaEvent()

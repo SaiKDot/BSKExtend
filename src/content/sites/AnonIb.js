@@ -2,12 +2,26 @@ import $ from "jquery";
 import { convertToValidFilename } from "../../utils";
 export default class AnonIb {
   constructor() {
-    this.addButton();
-    this.addListener();
+    this.downloadArray = [];
     this.postTitle = "anonib thread";
     this.threadNum = "";
     this.fileString = "";
-    this.downloadArray = [];
+    this.addButton();
+    this.addListener();
+    this.parseThread();
+   
+   
+  }
+  sendMessage(request) {
+    return new Promise((resolve, reject) => {
+      chrome.runtime.sendMessage(request, (response) => {
+        if (response.success) {
+          resolve(response);
+        } else {
+          reject(response);
+        }
+      });
+    });
   }
 
   addButton() {
@@ -45,7 +59,7 @@ export default class AnonIb {
       this.threadNum = $("#threadIdentifier").val();
     }
 
-    this.postTitle = `${this.postTitle} - anonib cel - ${this.threadNum}`;
+    this.postTitle = convertToValidFilename(`${this.postTitle} - anonib cel - ${this.threadNum}`);
 
     const allposts = $("#threadList").find(".uploadCell");
     $.each(allposts, (i, val) => {
@@ -68,35 +82,33 @@ export default class AnonIb {
       this.downloadArray.push({ link: fileLink, name: fileName });
     });
   }
-  createTextString() {
-    let txtstr = "";
-    $.each(this.downloadArray, (i, val) => {
-      txtstr += `${val.link}\n\tout=${val.name} \n\tdir=${this.postTitle}\n`;
-    });
-
-    chrome.runtime.sendMessage(
-      {
+  async createTextString() {
+      let txtstr = "";
+      $.each(this.downloadArray, (i, val) => {
+        txtstr += `${val.link}\n\tout=${val.name} \n\tdir=${this.postTitle}\n`;
+      });
+      let message = await this.sendMessage({
         message: "getAria",
         links: txtstr,
         threadID: this.threadNum
-      },
-      (response) => {
-        if (response.success) {
-          console.log(response);
-        } else {
-          console.log(response, "Error");
-        }
-      }
-    );
+      });
+      message.success ? console.log(message) : console.error(message);    
   }
-  async downladAll(){
-    const newArr = this.downloadArray.map((val)=> {return { filename: `anon-ib/${this.postTitle}/${val.name}`, url: val.link }})
-       let message = await this.sendMessage({
-         message: "downloadBulk",
-         linksArray: newArr
-       });
 
-       message.success ? console.log(message) : console.error(message);
+  async downladAll() {
+    // console.log(this.downloadArray)
+    const newArr = this.downloadArray.map((val) => {
+      return {
+        filename: `anon-ib/${this.postTitle}/${val.name}`,
+        link: val.link
+      };
+    });
+    // console.log(newArr)
+    let message = await this.sendMessage({
+      message: "downloadBulk",
+      linksArray: newArr
+    });
+
+    message.success ? console.log(message) : console.error(message);
   }
-   
 }

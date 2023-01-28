@@ -15,6 +15,7 @@ export default class EventTasks {
   }
   init() {
     chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
+      console.log(item);
       suggest({
         filename: this.fileName,
         conflictAction: "uniquify"
@@ -235,6 +236,7 @@ export default class EventTasks {
     });
   }
   async downloadSequentially(urls) {
+    console.log("downloadSe")
     for (const url of urls) {
       if (!url) continue;
       const currentId = await this.download(url.link);
@@ -246,6 +248,7 @@ export default class EventTasks {
   }
 
   download(url) {
+    console.log(url)
     return new Promise((resolve) =>
       chrome.downloads.download({ url }, resolve)
     );
