@@ -13,9 +13,10 @@ export const toType = (obj) => {
 
 export const convertToValidFilename = (string) => {
   let nname = string.replace(/[/|\\:$#'*?△☆"~<>]/g, ' ')
-  nname = nname.replace(/[\u0250-\ue007]/g, '')
+  nname = nname.replace(/[\u0250-\ue007]/g, '') // remove all the unicode range given
   nname = nname.replace(/^\./, '')
-  nname = nname.replace(/^ +/gm, '')
+  nname = nname.replace(/^ +/gm, '') //replace . in the begining 
+  nname = nname.replace(/\//g, "_"); //replace /
   if(nname.length > 230) nname = nname.substring(0,130)
    
   return nname

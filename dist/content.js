@@ -1952,6 +1952,7 @@ class _4chanManager extends _Chan__WEBPACK_IMPORTED_MODULE_2__.default {
       if (jquery__WEBPACK_IMPORTED_MODULE_0___default()(event.target).attr("class") === "postMessage") this.addButton();
       this.getAllFiles();
     });
+    console.log(window.location.pathname);
     this.parseThread();
   }
 
@@ -1984,16 +1985,17 @@ class _4chanManager extends _Chan__WEBPACK_IMPORTED_MODULE_2__.default {
   }
 
   addListener() {
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).off().on("click", "#downloadPost", e => {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).on("click", "#downloadPost", e => {
       e.preventDefault();
       const file = jquery__WEBPACK_IMPORTED_MODULE_0___default()(e.target).closest(".file")[0];
       this.getData(file);
     });
-    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).off().on("click", "#downloadAll", e => {
+    jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).on("click", "#downloadAll", e => {
       e.preventDefault();
       this.downladAll();
     });
     jquery__WEBPACK_IMPORTED_MODULE_0___default()(document).on("click", "#getAria", async e => {
+      console.log("hell");
       e.preventDefault();
       let txtstr = "";
 
@@ -2346,15 +2348,14 @@ __webpack_require__.r(__webpack_exports__);
 
 class ChanDownlaoder {
   constructor() {
-    // this.array = array
     this.dirDwn = '<button class="skButton" id="dwnaria"> Download Aria</button> <button class="skButton" id="drDwn">Download Images</button> ';
     this.dirSpan = '<span class="skButton" id="dwnaria"> Download Aria</span> <span class="skButton" id="drDwn">Download Images</span> ';
     this.postTitle;
     this.threadID;
     this.downloadArray = [];
-    this.dirOut; // this.appendLocationModal() //remove the function
-    // this.removeEvent() //remove the function
-    // this.downloadAriaEvent()
+    this.dirOut;
+    this.txtstr = "";
+    this.keys = {};
   }
 
   createAria2Array() {
@@ -2392,22 +2393,17 @@ class ChanDownlaoder {
 
   revealModal() {
     jquery__WEBPACK_IMPORTED_MODULE_1___default()('#myfolderModal').css('display', 'block');
-  } // removeEvent() {
-  //   const close = $('.ext-close')[0]
-  //   $(close).on('click', function (e) {
-  //     const modal = $('.ext-modal').first()
-  //     $(modal).css('display', 'none')
-  //   })
-  // }
-
+  }
 
   async downloadAria() {
-    let message = await this.sendMessage({
-      message: "getAria",
-      links: this.txtstr,
-      threadID: this.threadID
+    return new Promise((resolve, reject) => {
+      let message = this.sendMessage({
+        message: "getAria",
+        links: this.txtstr,
+        threadID: this.threadID
+      });
+      message.success ? resolve(message) : reject(message);
     });
-    message.success ? console.log(message) : console.error(message);
   }
 
   sendMessage(request) {
@@ -2454,38 +2450,53 @@ class ChanArchive extends _Chan__WEBPACK_IMPORTED_MODULE_0__.default {
   }
 
   appendButton() {
-    jquery__WEBPACK_IMPORTED_MODULE_1___default()('header > .post_data').first().append(this.dirDwn);
+    jquery__WEBPACK_IMPORTED_MODULE_1___default()("header > .post_data").first().append(this.dirDwn);
+    jquery__WEBPACK_IMPORTED_MODULE_1___default()("article.post").each((i, el) => {
+      const post_controls = jquery__WEBPACK_IMPORTED_MODULE_1___default()(el).find(".post_controls");
+      let href = jquery__WEBPACK_IMPORTED_MODULE_1___default()(post_controls).find("a")[0].href;
+      href = href.replace("archived.moe", "thebarchive.com");
+      jquery__WEBPACK_IMPORTED_MODULE_1___default()(post_controls).prepend(`<a href="${href}" class="btnr parent">barchive</a>`);
+    });
   }
 
   addEvents() {
     jquery__WEBPACK_IMPORTED_MODULE_1___default()(document).on("click", "#dwnaria", () => {
-      let dirOut = `${this.postTitle} - ${this.threadID}`;
-      console.log(dirOut);
-      this.createAria2Array(dirOut);
-      this.downloadAria();
+      this.downloadAriaEvent();
+    });
+    jquery__WEBPACK_IMPORTED_MODULE_1___default()(document).on("keydown", event => {
+      if (event.key === "e" && event.ctrlKey) {
+        event.preventDefault();
+        this.downloadAriaEvent(); // window.close();
+      }
     });
   }
 
+  downloadAriaEvent() {
+    let dirOut = `${this.postTitle} - ${this.threadID}`;
+    this.createAria2Array(dirOut);
+    this.downloadAria().then(setTimeout(window.close, 250)).catch(err => console.log(err));
+  }
+
   getLinks() {
-    const article = jquery__WEBPACK_IMPORTED_MODULE_1___default()('article.thread:first')[0];
-    this.threadID = jquery__WEBPACK_IMPORTED_MODULE_1___default()(article).data('thread-num');
-    let h2t = jquery__WEBPACK_IMPORTED_MODULE_1___default()(article).find('.post_title').text();
-    h2t = h2t.replace(/[^a-z0-9\s]/gi, '').replace(/\s*$/, '').trim();
-    var xf = jquery__WEBPACK_IMPORTED_MODULE_1___default()('.text').first().text();
-    var snt = xf.split(' ').slice(0, 6).join(' ').trim().replace(/[^a-z0-9\s]/gi, '');
-    this.postTitle = h2t == '' || h2t == null || typeof h2t === "undefined" ? snt : h2t;
-    const links = jquery__WEBPACK_IMPORTED_MODULE_1___default()(article).find('.post_file_filename');
+    const article = jquery__WEBPACK_IMPORTED_MODULE_1___default()("article.thread:first")[0];
+    this.threadID = jquery__WEBPACK_IMPORTED_MODULE_1___default()(article).data("thread-num");
+    let h2t = jquery__WEBPACK_IMPORTED_MODULE_1___default()(article).find(".post_title").text();
+    h2t = h2t.replace(/[^a-z0-9\s]/gi, "").replace(/\s*$/, "").trim();
+    var xf = jquery__WEBPACK_IMPORTED_MODULE_1___default()(".text").first().text();
+    var snt = xf.split(" ").slice(0, 6).join(" ").trim().replace(/[^a-z0-9\s]/gi, "");
+    this.postTitle = h2t == "" || h2t == null || typeof h2t === "undefined" ? snt : h2t;
+    const links = jquery__WEBPACK_IMPORTED_MODULE_1___default()(article).find(".post_file_filename");
     links.each((i, o) => {
       let fi_con, link;
-      fi_con = jquery__WEBPACK_IMPORTED_MODULE_1___default()(o).closest('.post_file').find('.post_file_controls');
+      fi_con = jquery__WEBPACK_IMPORTED_MODULE_1___default()(o).closest(".post_file").find(".post_file_controls");
 
       if (fi_con.length == 0) {
-        fi_con = jquery__WEBPACK_IMPORTED_MODULE_1___default()(o).closest('.post_file').siblings('.post_file_controls');
+        fi_con = jquery__WEBPACK_IMPORTED_MODULE_1___default()(o).closest(".post_file").siblings(".post_file_controls");
       }
 
-      if (this.domain != 'archived.moe') {
-        const url_A = fi_con.find('a:last')[0];
-        link = jquery__WEBPACK_IMPORTED_MODULE_1___default()(url_A).attr('href');
+      if (this.domain != "archived.moe") {
+        const url_A = fi_con.find("a:last")[0];
+        link = jquery__WEBPACK_IMPORTED_MODULE_1___default()(url_A).attr("href");
       } else {
         link = this.archivedMoeLinks(fi_con, i);
       }
@@ -2494,8 +2505,8 @@ class ChanArchive extends _Chan__WEBPACK_IMPORTED_MODULE_0__.default {
       let fname = o.title;
       let title;
 
-      if (fname == null || fname == '' || typeof fname == "undefined") {
-        title = lname.substring(lname.lastIndexOf('/') + 1);
+      if (fname == null || fname == "" || typeof fname == "undefined") {
+        title = lname.substring(lname.lastIndexOf("/") + 1);
       } else {
         title = fname;
       }
@@ -2505,32 +2516,29 @@ class ChanArchive extends _Chan__WEBPACK_IMPORTED_MODULE_0__.default {
         link
       });
     });
+    console.log(this.downloadArray);
   }
 
   archivedMoeLinks(fi_con, i) {
     let a;
 
     if (i == 0) {
-      a = fi_con.siblings('.post_file').find('.post_file_filename');
+      a = fi_con.siblings(".post_file").find(".post_file_filename");
     } else {
-      a = fi_con.siblings('.post_file_filename');
+      a = fi_con.siblings(".post_file_filename");
     }
 
-    return jquery__WEBPACK_IMPORTED_MODULE_1___default()(a).attr('href'); // console.log($(a).attr('href'))
+    return jquery__WEBPACK_IMPORTED_MODULE_1___default()(a).attr("href"); // console.log($(a).attr('href'))
   }
 
   downloadFiles() {
-    jquery__WEBPACK_IMPORTED_MODULE_1___default()('#drDwn').on('click', async () => {
+    jquery__WEBPACK_IMPORTED_MODULE_1___default()("#drDwn").on("click", async () => {
       let message = await this.sendMessage({
-        message: 'downloadBulk',
+        message: "downloadBulk",
         linksArray: this.downloadArray
       });
       message.success ? console.log(message) : console.error(message);
     });
-  }
-
-  downloadAriaEvent() {
-    console.log(this.downloadArray);
   }
 
 }
@@ -3327,9 +3335,13 @@ const toType = obj => {
 };
 const convertToValidFilename = string => {
   let nname = string.replace(/[/|\\:$#'*?△☆"~<>]/g, ' ');
-  nname = nname.replace(/[\u0250-\ue007]/g, '');
+  nname = nname.replace(/[\u0250-\ue007]/g, ''); // remove all the unicode range given
+
   nname = nname.replace(/^\./, '');
-  nname = nname.replace(/^ +/gm, '');
+  nname = nname.replace(/^ +/gm, ''); //replace . in the begining 
+
+  nname = nname.replace(/\//g, "_"); //replace /
+
   if (nname.length > 230) nname = nname.substring(0, 130);
   return nname;
 };
@@ -14837,6 +14849,7 @@ class AppLauncher {
       case this.domain == "archived.moe":
       case this.domain == "archive.wakarimasen.moe":
       case this.domain == "thebarchive.com":
+      case this.domain == "www.thebarchive.com":
         {
           new _sites_ChanArchive__WEBPACK_IMPORTED_MODULE_4__.default(this.domain);
         }

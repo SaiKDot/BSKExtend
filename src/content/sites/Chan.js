@@ -2,17 +2,17 @@ import {convertToValidFilename} from '../../utils'
 import $ from 'jquery'
 export default class ChanDownlaoder {
   constructor() {
-    // this.array = array
+    
     this.dirDwn =
       '<button class="skButton" id="dwnaria"> Download Aria</button> <button class="skButton" id="drDwn">Download Images</button> '
     this.dirSpan = '<span class="skButton" id="dwnaria"> Download Aria</span> <span class="skButton" id="drDwn">Download Images</span> '
     this.postTitle
     this.threadID 
     this.downloadArray = []
-    this.dirOut    
-    // this.appendLocationModal() //remove the function
-    // this.removeEvent() //remove the function
-    // this.downloadAriaEvent()
+    this.dirOut 
+    this.txtstr = ""
+    this.keys = {};
+ 
   }
   createAria2Array() {
     $.each(this.downloadArray, (i, val) => {     
@@ -52,22 +52,22 @@ export default class ChanDownlaoder {
     $('#myfolderModal').css('display', 'block')
   }
 
-  // removeEvent() {
-  //   const close = $('.ext-close')[0]
-  //   $(close).on('click', function (e) {
-  //     const modal = $('.ext-modal').first()
-  //     $(modal).css('display', 'none')
-  //   })
-  // }
+ 
 
-  async downloadAria() {   
-     let message = await this.sendMessage({
+  async downloadAria() { 
+    
+    
+   return new Promise( (resolve, reject) => {
+     let message = this.sendMessage({
        message: "getAria",
        links: this.txtstr,
        threadID: this.threadID
      });
-     
-    message.success ? console.log(message) : console.error(message)
+
+     message.success ? resolve(message) : reject(message);
+   });
+    
+    
   }
 
 

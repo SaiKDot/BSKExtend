@@ -37,19 +37,20 @@ export default class AppLauncher {
       case this.domain == "archived.moe":
       case this.domain == "archive.wakarimasen.moe":
       case this.domain == "thebarchive.com":
+      case this.domain == "www.thebarchive.com":
         {
           new ChanArchive(this.domain);
         }
         break;
       case this.domain === "twitter.com":
         Twitter();
-		break;
-    case this.domain === "imgsrc.ru":
+        break;
+      case this.domain === "imgsrc.ru":
         new ImgSrcRu();
-      break;
+        break;
       case this.domain === "anonib.al":
         new AnonIb();
-		break;
+        break;
       default:
         console.log("other");
     }

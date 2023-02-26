@@ -15,6 +15,7 @@ export default class _4chanManager extends ChanDownlaoder {
         this.addButton();
         this.getAllFiles();
     });
+    console.log(window.location.pathname)
 
     this.parseThread();
   }
@@ -53,21 +54,19 @@ export default class _4chanManager extends ChanDownlaoder {
     );
   }
   addListener() {
-    $(document)
-      .off()
-      .on("click", "#downloadPost", (e) => {
-        e.preventDefault();
+    $(document).on("click", "#downloadPost", (e) => {
+        e.preventDefault();        
         const file = $(e.target).closest(".file")[0];
         this.getData(file);
       });
-    $(document)
-      .off()
-      .on("click", "#downloadAll", (e) => {
+
+    $(document).on("click", "#downloadAll", (e) => {
         e.preventDefault();
         this.downladAll();
       });
 
     $(document).on("click", "#getAria", async (e) => {
+      console.log("hell")
       e.preventDefault();      
       let txtstr = "";
       for (let i = 0; i < this.downloadArray.length; i++) {
