@@ -37,6 +37,7 @@ export default class _4chanManager extends ChanDownlaoder {
         .slice(0, 50);
     if (titleText === "") titleText = "4chan";
     this.threadNum = $("[name='resto']").val();
+    titleText = convertToValidFilename(titleText);
     this.postTitle = titleText + " - " + this.threadNum;
     this.getAllFiles();
   }

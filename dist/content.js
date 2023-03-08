@@ -1972,6 +1972,7 @@ class _4chanManager extends _Chan__WEBPACK_IMPORTED_MODULE_2__.default {
     if (titleText === "") titleText = jquery__WEBPACK_IMPORTED_MODULE_0___default()(".opContainer").find(" .post .postMessage").text().slice(0, 50);
     if (titleText === "") titleText = "4chan";
     this.threadNum = jquery__WEBPACK_IMPORTED_MODULE_0___default()("[name='resto']").val();
+    titleText = (0,_utils__WEBPACK_IMPORTED_MODULE_1__.convertToValidFilename)(titleText);
     this.postTitle = titleText + " - " + this.threadNum;
     this.getAllFiles();
   }
@@ -14864,6 +14865,7 @@ class AppLauncher {
         break;
 
       case this.domain === "anonib.al":
+      case this.domain === "wikieat.club":
         new _sites_AnonIb__WEBPACK_IMPORTED_MODULE_7__.default();
         break;
 

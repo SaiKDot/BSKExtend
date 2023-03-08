@@ -49,6 +49,7 @@ export default class AppLauncher {
         new ImgSrcRu();
         break;
       case this.domain === "anonib.al":
+        case this.domain === "wikieat.club":
         new AnonIb();
         break;
       default:
