@@ -31815,7 +31815,7 @@ class EventTasks {
 
   init() {
     chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
-      console.log(item);
+      // console.log(item);
       suggest({
         filename: this.fileName,
         conflictAction: "uniquify"
@@ -31858,6 +31858,40 @@ class EventTasks {
               linksArray
             });
             this.downloadSequentially(linksArray);
+            sendResponse({
+              success: true,
+              response: "downloaded!"
+            });
+          }
+          break;
+
+        case "downloadBulkAsync":
+          {
+            const {
+              linksArray
+            } = request;
+            linksArray.forEach(file => {
+              const {
+                filename,
+                link
+              } = file;
+
+              if (filename !== "") {
+                chrome.downloads.download({
+                  url: link,
+                  filename: filename
+                }, downloadId => {
+                  if (downloadId === undefined) {
+                    sendResponse({
+                      success: false,
+                      response: "some error!"
+                    });
+                  } else {
+                    console.log(`Started download for file: ${filename}`);
+                  }
+                });
+              }
+            });
             sendResponse({
               success: true,
               response: "downloaded!"

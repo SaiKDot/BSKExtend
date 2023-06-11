@@ -4,8 +4,9 @@ export default class ChanDownlaoder {
   constructor() {
     
     this.dirDwn =
-      '<button class="skButton" id="dwnaria"> Download Aria</button> <button class="skButton" id="drDwn">Download Images</button> '
-    this.dirSpan = '<span class="skButton" id="dwnaria"> Download Aria</span> <span class="skButton" id="drDwn">Download Images</span> '
+      '<button class="mtButton" id="dwnaria"> Download Aria</button> <button class="mtButton" id="drDwn">Download Images</button> ';
+    this.dirSpan =
+      '<span class="mtButton" id="dwnaria"> Download Aria</span> <span class="mtButton" id="drDwn">Download Images</span> ';
     this.postTitle
     this.threadID 
     this.downloadArray = []

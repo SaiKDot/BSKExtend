@@ -15,7 +15,7 @@ export default class EventTasks {
   }
   init() {
     chrome.downloads.onDeterminingFilename.addListener((item, suggest) => {
-      console.log(item);
+      // console.log(item);
       suggest({
         filename: this.fileName,
         conflictAction: "uniquify"
@@ -32,29 +32,51 @@ export default class EventTasks {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       console.log(request.message);
       switch (request.message) {
-        case "downloadFile":
-          {
-            console.log(request);
-            this.url = request.link;
-            this.fileName = request.name;
-            this.downloadFile();
-            sendResponse({ success: true, response: "downloaded!" });
-          }
+          case "downloadFile":
+            {
+              console.log(request);
+              this.url = request.link;
+              this.fileName = request.name;
+              this.downloadFile();
+              sendResponse({ success: true, response: "downloaded!" });
+            }
           break;
-        case "downloadBulk":
-          {
-            // let links = []
-            // this.fileName =  request.name
-            // links.push(...request.links)
+          case "downloadBulk":
+            {
+              // let links = []
+              // this.fileName =  request.name
+              // links.push(...request.links)
 
-            const { linksArray } = request;
-            console.log({ linksArray });
+              const { linksArray } = request;
+              console.log({ linksArray });
 
-            this.downloadSequentially(linksArray);
-            sendResponse({ success: true, response: "downloaded!" });
-          }
-          break;
-
+              this.downloadSequentially(linksArray);
+              sendResponse({ success: true, response: "downloaded!" });
+            }
+        break;
+       case "downloadBulkAsync" :
+       {
+         const { linksArray } = request;
+         linksArray.forEach((file) => {
+           const { filename, link } = file;
+            
+            if(filename !== "") {
+               chrome.downloads.download(
+                 { url: link, filename: filename },
+                 (downloadId) => {
+                   if (downloadId === undefined) {
+                     sendResponse({ success: false, response: "some error!" });
+                   } else {
+                     console.log(`Started download for file: ${filename}`);
+                   }
+                 }
+               );
+            }
+         
+         });
+          sendResponse({ success: true, response: "downloaded!" });
+       }
+       break;
         case "loadImgurPage":
           {
             this.url = request.link;

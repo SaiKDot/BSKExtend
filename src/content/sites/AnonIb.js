@@ -27,11 +27,11 @@ export default class AnonIb {
   addButton() {
     if ($(".aria2").length == 0)
       $(
-        '<button class="skButton aria2" type="button">aria2c</button>'
+        '<button class="mtButton aria2" type="button">aria2c</button>'
       ).appendTo(" .opHead");
     if ($(".down-sync").length == 0)
       $(
-        '<button class="skButton down-sync" type="button">Download</button>'
+        '<button class="mtButton down-sync" type="button">Download</button>'
       ).appendTo(" .opHead");
   }
   addListener() {

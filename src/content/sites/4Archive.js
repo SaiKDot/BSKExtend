@@ -13,43 +13,52 @@ export default class _4Archive extends ChanDownloader {
   }
 
   getLinks() {
-    let h2t = $('.postInfo').find('.subject').text()
-    h2t = h2t
-      .replace(/[^a-z0-9\s]/gi, '')
-      .replace(/\s*$/, '')
-      .trim()
-    console.log({h2t})
-    let xf = $('.postMessage').first().text()
-    console.log({xf})
-    let snt = xf
-      .split(' ')
+    let postInfo = $(".postInfo").find(".subject").text();
+    postInfo = postInfo
+      .replace(/[^a-z0-9\s]/gi, "")
+      .replace(/\s*$/, "")
+      .trim();
+    console.log({ postInfo });
+    let postMessage = $('.postMessage').first().text()
+    console.log({ postMessage });
+    postMessage = postMessage
+      .split(" ")
       .slice(0, 6)
-      .join(' ')
+      .join(" ")
       .trim()
-      .replace(/[^a-z0-9\s]/gi, '')
-    snt = snt.replace(/\n/g, ' ')
-    snt = snt.replace('br', ' ')
+      .replace(/[^a-z0-9\s]/gi, "");
+    postMessage = postMessage.replace(/\n/g, " ");
+    postMessage = postMessage.replace("br", " ");
 
-    this.postTitle = h2t == '' || h2t == null ? snt : h2t
+    this.postTitle =
+      postInfo == "" || postInfo == null ? postMessage : postInfo;
     this.threadID = $('.thread').first().attr('id').replace('t', '')  
      
-    const links = $('.postContainer').find('.fileText').find('a:first')
-    links.each((i, o) => {      
-      let lname = o.text
-      let title = o.title
-      title = title.replace('Full size of ','')
-      let filename
-      if (title == null || title == '' || title == undefined) {
-        filename = lname.substring(lname.lastIndexOf('/') + 1)
+    const postList = $(".postContainer").find(".fileText").find("a:first");
+    
+    postList.each((i, o) => {
+      let linkName = o.text;
+      let title = o.title;
+      let link = o.href;
+
+      title = title.replace("Full size of ", "");
+      let fileName;
+
+      const ext = link.split(".").pop();
+       fileName = fileName.split(".").shift();
+      //  let name = convertToValidFilename(fileName) + "." + ext;
+
+      if (title == null || title == "" || title == undefined) {
+        fileName = linkName.substring(linkName.lastIndexOf("/") + 1);
       } else {
-        filename = title
+        fileName = title;
       }
-      var url = o.href
+    
       this.downloadArray.push({
-        title: filename,
-        link: url,
-      })
-    })
+        title: fileName,
+        link: link
+      });
+    });
      
   }
   downloadFiles() {

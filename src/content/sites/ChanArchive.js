@@ -9,19 +9,22 @@ export default class ChanArchive extends ChanDownloader {
     this.getLinks();
     this.postTitle;
     // this.revealModalEvent() //remove the function
-    // this.downloadFiles()
+   this.downloadFiles()
   }
   appendButton() {
     $("header > .post_data").first().append(this.dirDwn);
-    $("article.post").each((i, el) => {
-      const post_controls = $(el).find(".post_controls");
-      let href = $(post_controls).find("a")[0].href;
-      href = href.replace("archived.moe", "thebarchive.com");
+    if(this.domain !== "thebarchive") {
+        $("article.post").each((i, el) => {
+          const post_controls = $(el).find(".post_controls");
+          let href = $(post_controls).find("a")[0].href;
+          href = href.replace("archived.moe", "thebarchive.com");
 
-      $(post_controls).prepend(
-        `<a href="${href}" class="btnr parent">barchive</a>`
-      );
-    });
+          $(post_controls).prepend(
+            `<a href="${href}" class="btnr parent">barchive</a>`
+          );
+        });
+    }
+  
   }
   addEvents() {
     $(document).on("click", "#dwnaria", () => {
@@ -103,10 +106,19 @@ export default class ChanArchive extends ChanDownloader {
   }
 
   downloadFiles() {
-    $("#drDwn").on("click", async () => {
+    $("#drDwn").on("click", async () => {        
+       console.log(this.downloadArray);
+       const newArr = this.downloadArray.map((val) => {
+         return {
+           filename: `4chan-download/${this.postTitle} - ${this.threadID}/${val.title}`,
+           link: val.link
+         };
+       });
+       console.log(newArr);
+       
       let message = await this.sendMessage({
         message: "downloadBulk",
-        linksArray: this.downloadArray
+        linksArray: newArr
       });
 
       message.success ? console.log(message) : console.error(message);

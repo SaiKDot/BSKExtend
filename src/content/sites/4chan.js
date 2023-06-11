@@ -15,7 +15,7 @@ export default class _4chanManager extends ChanDownlaoder {
         this.addButton();
         this.getAllFiles();
     });
-    console.log(window.location.pathname)
+    // console.log(window.location.pathname)
 
     this.parseThread();
   }
@@ -37,6 +37,10 @@ export default class _4chanManager extends ChanDownlaoder {
         .slice(0, 50);
     if (titleText === "") titleText = "4chan";
     this.threadNum = $("[name='resto']").val();
+    console.log(this.threadNum);
+    if (this.threadNum === "" || this.threadNum === undefined) {
+      this.threadNum = window.location.pathname.split("/")[3];
+    }
     titleText = convertToValidFilename(titleText);
     this.postTitle = titleText + " - " + this.threadNum;
     this.getAllFiles();
@@ -46,12 +50,12 @@ export default class _4chanManager extends ChanDownlaoder {
     fileText.find(".d2").remove();
 
     fileText[0].innerHTML +=
-      '<button class="skButton d2" id="getAria" type="button">aria2c</button> <button class="skButton d2" id="downloadAll" type="button">Download All</button>';
+      '<button class="mtButton d2" id="getAria" type="button">aria2c</button> <button class="mtButton d2" id="downloadAll" type="button">Download All</button>';
 
     fileText.find(".d1").remove();
 
     $(".postContainer .fileText:not(:first)").append(
-      '<button class="skButton d1" id="downloadPost" type="button">Download</button>'
+      '<button class="mtButton d1" id="downloadPost" type="button">Download</button>'
     );
   }
   addListener() {
