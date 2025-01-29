@@ -32,91 +32,82 @@ export default class EventTasks {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       console.log(request.message);
       switch (request.message) {
-          case "downloadFile":
-            {
-              console.log(request);
+          case "downloadFile": {
+              // console.log(request);
               this.url = request.link;
               this.fileName = request.name;
               this.downloadFile();
               sendResponse({ success: true, response: "downloaded!" });
-            }
+          }
           break;
-          case "downloadBulk":
-            {
-              // let links = []
-              // this.fileName =  request.name
-              // links.push(...request.links)
+          case "downloadBulk": {  
 
               const { linksArray } = request;
               console.log({ linksArray });
 
               this.downloadSequentially(linksArray);
               sendResponse({ success: true, response: "downloaded!" });
-            }
-        break;
-       case "downloadBulkAsync" :
-       {
-         const { linksArray } = request;
-         linksArray.forEach((file) => {
-           const { filename, link } = file;
+          }
+          break;
+          case "downloadBulkAsync" :  {
+            const { linksArray } = request;
+            linksArray.forEach((file) => {
+              const { filename, link } = file;
+                
+                if(filename !== "") {
+                  chrome.downloads.download(
+                    { url: link, filename: filename },
+                    (downloadId) => {
+                      if (downloadId === undefined) {
+                        sendResponse({ success: false, response: "some error!" });
+                      } else {
+                        console.log(`Started download for file: ${filename}`);
+                      }
+                    }
+                  );
+                }
             
-            if(filename !== "") {
-               chrome.downloads.download(
-                 { url: link, filename: filename },
-                 (downloadId) => {
-                   if (downloadId === undefined) {
-                     sendResponse({ success: false, response: "some error!" });
-                   } else {
-                     console.log(`Started download for file: ${filename}`);
-                   }
-                 }
-               );
-            }
-         
-         });
-          sendResponse({ success: true, response: "downloaded!" });
-       }
-       break;
-        case "loadImgurPage":
-          {
-            this.url = request.link;
-            console.log(request.link);
-            fetch(this.url)
-              .then(async (body) => {
-                let res = await body.json();
-                sendResponse({ success: true, response: res });
-              })
-              .catch(() => {
-                sendResponse({ success: false, response: "unable to fetch" });
-              });
-          }
-          break;
-        case "loadGiphyPage":
-          {
-            this.url = request.link;
-            this.fileName = request.title;
-            console.log(request.title);
-            var self = this;
-            fetch(this.url)
-              .then(async (response) => {
-                return response.text();
-              })
-              .then((responseText) => {
-                const $ = cheerio.load(responseText);
-                $("meta").each(function (i, e) {
-                  if ($(e).attr("property") == "og:video:secure_url") {
-                    let url = $(e).attr("content");
-                    url = url.replace("media4", "i");
-                    const stringArray = url.split("?");
-                    self.url = stringArray[0];
-                    self.downloadFile();
-                  }
+            });
+              sendResponse({ success: true, response: "downloaded!" });
+        }
+        break;
+        case "loadImgurPage": {
+              this.url = request.link;
+              console.log(request.link);
+              fetch(this.url)
+                .then(async (body) => {
+                  let res = await body.json();
+                  sendResponse({ success: true, response: res });
+                })
+                .catch(() => {
+                  sendResponse({ success: false, response: "unable to fetch" });
                 });
+        }
+        break;
+        case "loadGiphyPage": {
+          this.url = request.link;
+          this.fileName = request.title;
+          console.log(request.title);
+          var self = this;
+          fetch(this.url)
+            .then(async (response) => {
+              return response.text();
+            })
+            .then((responseText) => {
+              const $ = cheerio.load(responseText);
+              $("meta").each(function (i, e) {
+                if ($(e).attr("property") == "og:video:secure_url") {
+                  let url = $(e).attr("content");
+                  url = url.replace("media4", "i");
+                  const stringArray = url.split("?");
+                  self.url = stringArray[0];
+                  self.downloadFile();
+                }
               });
-          }
-          break;
-        case "loadPage":
-          {
+            });
+        }
+        break;
+        case "loadPage": {
             const url = request.link;
             fetch(url)
               .then(async (body) => {
@@ -129,33 +120,31 @@ export default class EventTasks {
                   response: "unable to fetch" + e
                 });
               });
-          }
-          break;
-        case "getAria":
-          {
+        }
+        break;
+        case "getAria": {
             const { links, threadID } = request;            
             this.url =
               "data:text/plain;charset=utf-8," + encodeURIComponent(links);
             this.fileName = threadID + ".txt";
             this.downloadFile();
             sendResponse({ success: true, response: "Aria File downloaded!" });
-          }
-          break;
-        case "ariaDownload":
-          {
-            const { links, postTitle } = request;
-            console.log(postTitle)
+        }
+        break;
+        case "ariaDownload": {
+          const { links, postTitle } = request;
+          console.log(postTitle)
 
-            var port = chrome.runtime.connectNative("mybat.application");
-            port.postMessage({ txtStr: links, filename: "some message" });
-            port.onMessage.addListener(function (msg) {
-              console.log("Received" + msg);
-            });
-            port.onDisconnect.addListener(function () {
-              console.log("Disconnected" + chrome.runtime.lastError.message);
-            });
-          }
-          break;
+          var port = chrome.runtime.connectNative("mybat.application");
+          port.postMessage({ txtStr: links, filename: "some message" });
+          port.onMessage.addListener(function (msg) {
+            console.log("Received" + msg);
+          });
+          port.onDisconnect.addListener(function () {
+            console.log("Disconnected" + chrome.runtime.lastError.message);
+          });
+        }
+        break;
         default:
           return true;
       }
@@ -258,19 +247,19 @@ export default class EventTasks {
     });
   }
   async downloadSequentially(urls) {
-    console.log("downloadSe")
+    // console.log("downloadSe")
     for (const url of urls) {
       if (!url) continue;
       const currentId = await this.download(url.link);
       this.fileName = url.filename;
       // eslint-disable-next-line no-unused-vars
-      const success = await this.onDownloadComplete(currentId);
+      await this.onDownloadComplete(currentId);
     }
     return;
   }
 
   download(url) {
-    console.log(url)
+    // console.log(url)
     return new Promise((resolve) =>
       chrome.downloads.download({ url }, resolve)
     );

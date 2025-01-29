@@ -11,195 +11,232 @@ import {
  
 
 export default class Reddit {
-
   constructor() {
-    var self = this
+    var self = this;
     this.post,
-    this.url,
-    this.sub,
-    this.domain,
-    this.ext,
-    this.title,
-    this.parts,
-    this.media_metadata,
-    this.postIdContainer = [],
-    this.lastLength = 0,
-    this.supportedExtensions = [
-      'png',
-      'jpg',
-      'jpeg',
-      'gif',
-      'gifv',
-      'mp4',
-      'mp3',
-    ]
-    this._ApiEndpoint = 'https://api.imgur.com/3/'
-    this.imgurInfo
-    chrome.storage.sync.set({ imgurInfo: { client_id: 'ff21f6fc51cefd4' } })
-    chrome.storage.sync.get(['imgurInfo'], function (result) {
-      self.imgurInfo = result.imgurInfo
-    })
-    this.init()
+      this.url,
+      this.sub,
+      this.domain,
+      this.ext,
+      this.title,
+      this.parts,
+      this.media_metadata,
+      (this.postIdContainer = []),
+      (this.lastLength = 0),
+      (this.supportedExtensions = [
+        "png",
+        "jpg",
+        "jpeg",
+        "gif",
+        "gifv",
+        "mp4",
+        "mp3"
+      ]);
+    this._ApiEndpoint = "https://api.imgur.com/3/";
+    this.imgurInfo;
+    chrome.storage.sync.set({ imgurInfo: { client_id: "ff21f6fc51cefd4" } });
+    chrome.storage.sync.get(["imgurInfo"], function (result) {
+      self.imgurInfo = result.imgurInfo;
+    });
+    this.init();
   }
 
   init() {
-    var self = this
+    var self = this;
 
-    window.addEventListener('neverEndingLoad', function () {
-      self.setRedditMenu()
-    })
+    window.addEventListener("neverEndingLoad", function () {
+      self.setRedditMenu();
+    });
     // $('.rpBJOHq2PR60pnwJlUyP0').on('DOMNodeInserted', function (e) {
     //   console.log(e.target.parentNode)
     // })
-    this.addListenerNew()
-    this.setRedditMenu()
+    this.addListenerNew();
+    this.setRedditMenu();
+    this.addUnSaveAll();
+    this.changeSaveButtonColor();
   }
 
   async pageUpdateChecker() {
     while (true) {
-      await wait(50)
+      await wait(50);
       if (true) {
-        this.newMenu()
+        
+        this.newMenu();
       }
     }
   }
 
   setRedditMenu() {
-    var so = this
-    let list = $('.thing').find('.buttons')
+    // var so = this;
+    let list = $(".thing").find(".buttons");
     if (list.length == 0) {
       //const postCheckInterval = setInterval(() => this.newMenu(), 500)
-      this.pageUpdateChecker()
+      this.pageUpdateChecker();
       // this.addListenerNew()
     } else {
-      this.oldMenu(list)
+      this.oldMenu(list);
+     
     }
+  }
+
+  changeSaveButtonColor() {
+     const unSavebutton = $(document).find(".link-unsave-button.save-button");
+      $(unSavebutton).each(function (i, e) {
+        const link = $(e).find("a");
+        if ($(e).text() === "unsave") {
+          $(link).css("color", "#E3C800");
+          $(e).css("font-size", "1.2rem");
+        }
+      });
   }
 
   oldMenu(list) {
     let but =
-      '<li class="dwnlist"> <a href="#0" class="exdownload"> download</a> </li>'
+      '<li class="dwnlist"> <a href="#0" class="exdownload"> download</a> </li>';
     list.each(function () {
-      $(this).find('.dwnlist').remove('.dwnlist')
-      $(this).append(but)
-    })
+      $(this).find(".dwnlist").remove(".dwnlist");
+      $(this).append(but);
+    });
 
-    let downloadbuttons = $('.exdownload')
+    let downloadbuttons = $(".exdownload");
 
     Array.from(downloadbuttons).forEach((el) =>
-      el.addEventListener('click', (e) => {
-        e.preventDefault()
-        let elem = e.target
+      el.addEventListener("click", (e) => {
+        e.preventDefault();
+        let elem = e.target;
         // this.getData(elem)
       })
-    )
+    );
   }
 
   newMenu() {
     const menu =
-      '<button class="download-button-sk"><span class="pthKOcceozMuXLYrLlbL1"><i class="icon icon-download"></i></span><span class="_2-cXnP74241WI7fpcpfPmg _70940WUuFmpHbhKlj8EjZ">download</span></button>'
-    const postContainers = $('[data-testid="post-container"]')
+      '<button class="download-button-sk"><span class="pthKOcceozMuXLYrLlbL1"><i class="icon icon-download"></i></span><span class="_2-cXnP74241WI7fpcpfPmg _70940WUuFmpHbhKlj8EjZ">download</span></button>';
+    const postContainers = $('[data-testid="post-container"]');
     // const self = this
 
     if (postContainers.length != this.lastLength) {
       Array.from(postContainers).forEach((el) => {
-        const postComment = $(el).find('._3-miAEojrCvx_4FQ8x3P-s')
+        const postComment = $(el).find("._3-miAEojrCvx_4FQ8x3P-s");
 
         if (
-          el.classList.contains('promotedvideolink') ||
-          el.classList.contains('promotedlink') ||
+          el.classList.contains("promotedvideolink") ||
+          el.classList.contains("promotedlink") ||
           el == undefined
         ) {
-          return
+          return;
         }
-        if ($(postComment).find('.download-button-sk').length == 0) {
-          postComment.prepend(menu)
+        if ($(postComment).find(".download-button-sk").length == 0) {
+          postComment.prepend(menu);
         }
-      })
+      });
 
-      this.lastLength = postContainers.length
+      this.lastLength = postContainers.length;
     }
+  }
+
+  addUnSaveAll() {
+    const ab = $(document).find(".nav-buttons");
+    $(document).find(".nav-buttons").append("<span id='unsaveall' class='nextprev'> unsave all</span>");
+    $(document).find(".nav-buttons").find("#unsaveall").css("cursor", "pointer");
   }
 
   addListenerNew() {
-    var self = this
+    var self = this;
     $(document)
       .off()
-      .on('click', '.download-button-sk', function (e) {
-        e.preventDefault()
+      .on("click", ".download-button-sk", function (e) {
+        e.preventDefault();
         // if (e.target !== this) return
-        let elem = e.target
-        self.getDataNew(elem)
-      })
+        let elem = e.target;
+        self.getDataNew(elem);
+      });
+
+      $(document).off()
+        .on("click", "#unsaveall", function (e) {
+          e.preventDefault();
+          // if (e.target !== this) return
+          const saveButtons = $(document).find(".link-unsave-button");
+          saveButtons.each(function(i,e) {
+            
+            if (i === 0) {
+               $($(document).find(".link-unsave-button")[0]).trigger("click");
+             
+            }
+          })
+            
+        });
   }
 
   async getDataNew(el) {
-    const post = el.closest('.Post')
-    const iop = $('[data-testid="post_timestamp"]')
-    const tmstmp = $(post).find(iop)
-    let href = $(tmstmp).attr('href')
-    href += '.json'
-    const req = await fetch(href)
-    const resp = await req.json()
-    const data = resp[0].data.children[0].data
+    const post = el.closest(".Post");
+    const iop = $('[data-testid="post_timestamp"]');
+    const tmstmp = $(post).find(iop);
+    let href = $(tmstmp).attr("href");
+    href += ".json";
+    const req = await fetch(href);
+    const resp = await req.json();
+    const data = resp[0].data.children[0].data;
     // console.log(JSON.stringify(data))
-    console.log(data)
-    this.url = data.url
-    
+    console.log(data);
+    this.url = data.url;
+
     if (!data.url) {
-      this.url = data.url_overridden_by_dest
+      this.url = data.url_overridden_by_dest;
     }
-    this.sub = data.subreddit
-    this.ext = this.url.split('.').pop()
-    this.domain = data.domain
-    this.title = data.title
-    this.media_metadata = data.media_metadata
-     if ((this.media_metadata == null || this.media_metadata == undefined) && data.crosspost_parent_list ) {
-        this.media_metadata = data.crosspost_parent_list[0].media_metadata
+    this.sub = data.subreddit;
+    this.ext = this.url.split(".").pop();
+    this.domain = data.domain;
+    this.title = data.title;
+    this.media_metadata = data.media_metadata;
+    if (
+      (this.media_metadata == null || this.media_metadata == undefined) &&
+      data.crosspost_parent_list
+    ) {
+      this.media_metadata = data.crosspost_parent_list[0].media_metadata;
     }
-    this.fallbackUrl = data.secure_media.reddit_video.fallback_url
-    this.fallbackUrl = this.fallbackUrl.replace('?source=fallback', '')
+    this.fallbackUrl = data.secure_media.reddit_video.fallback_url;
+    this.fallbackUrl = this.fallbackUrl.replace("?source=fallback", "");
     if (this.supportedExtensions.includes(this.ext)) {
-      this.directDownload()
+      this.directDownload();
     } else {
-      this.delegateDomain()
+      this.delegateDomain();
     }
 
-    let isSelf = data.isSelf
+    let isSelf = data.isSelf;
     if (isSelf == false) {
-      this.delegateDomain()
+      this.delegateDomain();
     }
   }
   delegateDomain() {
-    console.log(this.domain)
+    console.log(this.domain);
     switch (this.domain) {
+      case "i.imgur.com":
+      case "imgur.com":
+        {
+          const imgurDownloader = new ImgurDownloader(
+            this.url,
+            this.domain,
+            this.sub,
+            this.title
+          );
+          // imgurDownloader.getImages()
+        }
 
-      case  'i.imgur.com' :
-      case  'imgur.com' : {        
-        const imgurDownloader = new ImgurDownloader(
-          this.url,
-          this.domain,
-          this.sub,         
-          this.title
-        )
-        // imgurDownloader.getImages()
-            
-      }
-            
-      break
-      case '//gfycat.com/':
-      case 'gfycat.com':
+        break;
+      case "//gfycat.com/":
+      case "gfycat.com":
         const gfycat = new GfyCatDownloader(
           this.url,
           this.domain,
           this.sub,
           this.title
-        )
-        break
-      case 'i.redd.it':
-        this.getdirect()
-        break
-      case 'v.redd.it':
+        );
+        break;
+      case "i.redd.it":
+        this.getdirect();
+        break;
+      case "v.redd.it":
         this.getRedditVideo = new RedditVideo(
           this.url,
           this.domain,
@@ -207,44 +244,44 @@ export default class Reddit {
           this.title,
           this.media_metadata,
           this.fallbackUrl
-        )
-        break
-      case 'reddit.com' : {
-        const redditdownload = new RedditDownloader(
-          this.url,
-          this.domain,
-          this.sub,
-          this.title,
-          this.media_metadata          
-        )
-      }        
-      break
-      case 'giphy.com' : {         
-        const giphydownload = new GiphyDownloader(
-          this.url,
-          this.domain,
-          this.sub,
-          this.title
-        )
-      }
-      break
-      case '//redgifs.com':
-      case 'redgifs.com': {
+        );
+        break;
+      case "reddit.com":
+        {
+          const redditdownload = new RedditDownloader(
+            this.url,
+            this.domain,
+            this.sub,
+            this.title,
+            this.media_metadata
+          );
+        }
+        break;
+      case "giphy.com":
+        {
+          const giphydownload = new GiphyDownloader(
+            this.url,
+            this.domain,
+            this.sub,
+            this.title
+          );
+        }
+        break;
+      case "//redgifs.com":
+      case "redgifs.com":
+        {
           const redgifs = new RedGifsDownloader(
             this.url,
             this.domain,
             this.sub,
             this.title
-          )
-      }
-      break
+          );
+        }
+        break;
       default:
-        this.directDownload()
+        this.directDownload();
     }
   }
-
-
-
 }
 
 class BaseDownloader {

@@ -9,8 +9,6 @@ export default class AnonIb {
     this.addButton();
     this.addListener();
     this.parseThread();
-   
-   
   }
   sendMessage(request) {
     return new Promise((resolve, reject) => {
@@ -59,7 +57,9 @@ export default class AnonIb {
       this.threadNum = $("#threadIdentifier").val();
     }
 
-    this.postTitle = convertToValidFilename(`${this.postTitle} - anonib cel - ${this.threadNum}`);
+    this.postTitle = convertToValidFilename(
+      `${this.postTitle} - anonib cel - ${this.threadNum}`
+    );
 
     const allposts = $("#threadList").find(".uploadCell");
     $.each(allposts, (i, val) => {
@@ -76,23 +76,23 @@ export default class AnonIb {
         fileLink = $(val).find(".nameLink").attr("href");
 
       if (!fileLink.startsWith("http://") && !fileLink.startsWith("https://")) {
-        fileLink = "https://anonib.pk" + fileLink;
+        fileLink = "https://anonib.al" + fileLink;
       }
 
       this.downloadArray.push({ link: fileLink, name: fileName });
     });
   }
   async createTextString() {
-      let txtstr = "";
-      $.each(this.downloadArray, (i, val) => {
-        txtstr += `${val.link}\n\tout=${val.name} \n\tdir=${this.postTitle}\n`;
-      });
-      let message = await this.sendMessage({
-        message: "getAria",
-        links: txtstr,
-        threadID: this.threadNum
-      });
-      message.success ? console.log(message) : console.error(message);    
+    let txtstr = "";
+    $.each(this.downloadArray, (i, val) => {
+      txtstr += `${val.link}\n\tout=${val.name} \n\tdir=${this.postTitle}\n`;
+    });
+    let message = await this.sendMessage({
+      message: "getAria",
+      links: txtstr,
+      threadID: this.threadNum
+    });
+    message.success ? console.log(message) : console.error(message);
   }
 
   async downladAll() {

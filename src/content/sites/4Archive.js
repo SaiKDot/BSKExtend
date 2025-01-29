@@ -19,8 +19,8 @@ export default class _4Archive extends ChanDownloader {
       .replace(/\s*$/, "")
       .trim();
     console.log({ postInfo });
-    let postMessage = $('.postMessage').first().text()
-    console.log({ postMessage });
+    let postMessage = $(".postMessage").first().text();
+    console.log("do", { postMessage });
     postMessage = postMessage
       .split(" ")
       .slice(0, 6)
@@ -45,13 +45,13 @@ export default class _4Archive extends ChanDownloader {
       let fileName;
 
       const ext = link.split(".").pop();
-       fileName = fileName.split(".").shift();
+       title = title.split(".").shift();
       //  let name = convertToValidFilename(fileName) + "." + ext;
 
       if (title == null || title == "" || title == undefined) {
         fileName = linkName.substring(linkName.lastIndexOf("/") + 1);
       } else {
-        fileName = title;
+        fileName = title+ ext;
       }
     
       this.downloadArray.push({

@@ -8,7 +8,7 @@ export default class _4chanManager extends ChanDownlaoder {
     // this.removeIframe();    
     this.title = "";
     this.threadNum = "";
-    this.addButton();
+  
     this.addListener();
     $(".thread").on("DOMNodeInserted", (event) => {
       if ($(event.target).attr("class") === "postMessage") 
@@ -18,6 +18,8 @@ export default class _4chanManager extends ChanDownlaoder {
     // console.log(window.location.pathname)
 
     this.parseThread();
+    this.addButton();
+    this.addJdownloaderLink()
   }
   removeHat() {
     $(".party-hat").each((o, e) => {
@@ -29,7 +31,7 @@ export default class _4chanManager extends ChanDownlaoder {
     $("iframe").remove();
   }
   parseThread() {
-    let titleText = $(".opContainer").find(".post .postInfo .subject").text();
+    let titleText = $(".opContainer").find(".postInfo .subject").text();
     if (titleText === "")
       titleText = $(".opContainer")
         .find(" .post .postMessage")
@@ -57,7 +59,30 @@ export default class _4chanManager extends ChanDownlaoder {
     $(".postContainer .fileText:not(:first)").append(
       '<button class="mtButton d1" id="downloadPost" type="button">Download</button>'
     );
+    
   }
+  addJdownloaderLink() {
+   if (!(window.location.href.split("#")[0]).includes('thread')) {
+      $(".opContainer").each((i, el) => {
+        //  console.log(el)
+        let titleText = $(el).find(".postInfo").find(".subject").text();
+        // console.log($(el).find(".postInfo").find('.subject').text());
+        // console.log($(el).find(".postMessage").text());
+        if (titleText === "") {
+          titleText = $(el)
+            .find(".postMessage")
+            .text()
+            .slice(0, 50);
+        }
+       const threadNum = $(el).find("input").attr("name");
+       const threadName = titleText + " - " + threadNum
+       const postNum = $(el).find(".postNum").find("a")[0].href;
+       const appStr = `    <a class="jdownloader-drag" href="${postNum}#packagename=${threadName}">jdownloader</a>`;
+      $(el).find(".postInfo").append($(appStr));
+      });     
+   }
+  }
+  
   addListener() {
     $(document).on("click", "#downloadPost", (e) => {
         e.preventDefault();        

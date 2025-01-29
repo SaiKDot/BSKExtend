@@ -48,8 +48,8 @@ export default class AppLauncher {
       case this.domain === "imgsrc.ru":
         new ImgSrcRu();
         break;
-      case this.domain === "anonib.al":
-        case this.domain === "wikieat.club":
+      case this.domain === "anonib.al" || this.domain === "anonib.pk":
+      case this.domain === "wikieat.club":
         new AnonIb();
         break;
       default:
